@@ -4,10 +4,11 @@ import { Button } from './components/ui/button';
 import { InfoCircledIcon } from '@radix-ui/react-icons';
 import { Input } from './components/ui/input';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from './components/ui/card';
+import { AssetSelector } from './components/AssetButton';
 
 function App() {
   return (
-    <div className="tracking-widest h-full bg-[url('/background.png')] bg-center">
+    <div className="tracking-widest h-full bg-[url('/background.png')] bg-center bg-cover">
       <div className="px-3 py-2 h-full flex flex-col">
         <div className="flex justify-between">
           <div>
@@ -18,6 +19,9 @@ function App() {
             <a className="font-thin underline">History</a>
             <a className="font-thin underline">Orders</a>
           </div>
+        </div>
+        <div className="pt-2">
+          <AssetSelector />
         </div>
         <div className="pt-2">
           <p className="text-xxs">Type of Position</p>
@@ -213,7 +217,7 @@ function App() {
             </div>
           </div>
         </div>
-        <div className="pt-2 min-h-[16rem]">
+        <div className="pt-3 min-h-[16rem]">
           <Card className="h-full">
             <CardHeader>
               <CardTitle className="text-sm">Summary</CardTitle>
