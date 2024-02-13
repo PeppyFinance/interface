@@ -5,11 +5,15 @@ import { InfoCircledIcon } from '@radix-ui/react-icons';
 import { Input } from './components/ui/input';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from './components/ui/card';
 import { AssetSelector } from './components/AssetButton';
+import { WalletButton } from './components/WalletButton';
 
 function App() {
   return (
     <div className="tracking-widest h-full bg-[url('/background.png')] bg-center bg-cover">
       <div className="px-3 py-2 h-full flex flex-col">
+        <div className="flex justify-between">
+          <WalletButton />
+        </div>
         <div className="flex justify-between">
           <div>
             <h1 className="font-medium">History</h1>
