@@ -1,4 +1,5 @@
-export enum Symbol {
+export enum Market {
   BTCUSD = 'BTCUSD',
   ETHUSD = 'ETHUSD',
 }
+
