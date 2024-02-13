@@ -3,3 +3,9 @@ export enum Market {
   ETHUSD = 'ETHUSD',
 }
 
+declare module 'wagmi' {
+  interface Register {
+    config: typeof config;
+  }
+}
+

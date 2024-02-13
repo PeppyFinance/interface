@@ -12,7 +12,7 @@ import { ChevronDown } from 'lucide-react';
 
 const TriggerButton = () => {
   return (
-    <div className="flex w-full h-16 w-full justify-between px-4">
+    <div className="flex w-full h-16 justify-between px-4">
       <div className="flex">
         <div className="mr-2 p-2 flex items-center w-16 h-full">
           <img
