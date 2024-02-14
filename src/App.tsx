@@ -6,6 +6,7 @@ import { Input } from './components/ui/input';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from './components/ui/card';
 import { AssetSelector } from './components/AssetButton';
 import { WalletButton } from './components/WalletButton';
+import { BalanceDisplay } from './components/BalanceDisplay';
 
 function App() {
   return (
@@ -13,6 +14,9 @@ function App() {
       <div className="px-3 py-2 h-full flex flex-col">
         <div className="flex justify-between">
           <WalletButton />
+        </div>
+        <div className="pt-2">
+          <BalanceDisplay />
         </div>
         <div className="flex justify-between">
           <div>
@@ -264,3 +268,4 @@ function App() {
 }
 
 export default App;
+
