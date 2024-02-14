@@ -24,8 +24,8 @@
     "react-ts-tradingview-widgets": "^1.2.3",
     "tailwind-merge": "^2.1.0",
     "tailwindcss-animate": "^1.0.7",
-    "viem": "^2.7.8",
-    "wagmi": "^1.4.10",
+    "viem": "^2.7.9",
+    "wagmi": "^2.5.7",
     "zustand": "^4.4.7"
   },
   "devDependencies": {
