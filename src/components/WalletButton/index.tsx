@@ -1,5 +1,4 @@
-import { Button } from '@/components/ui/button';
-
 export const WalletButton = () => {
-  return <Button>Connect Wallet</Button>;
+  return <w3m-button />;
 };
+
