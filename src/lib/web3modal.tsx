@@ -23,7 +23,7 @@ const config = defaultWagmiConfig({
   chains, // required
   projectId, // required
   transports: {
-    [localhost.id]: http('http://localhost:8545'),
+    [localhost.id]: http(),
   },
   metadata, // required
   enableWalletConnect: true, // Optional - true by default
