@@ -12,7 +12,19 @@ export function BalanceDisplay() {
   } = useReadContract({
     address: collateralTokenAddress,
     functionName: 'balanceOf',
+    account: address,
     args: [address],
+    abi: [
+      {
+        constant: true,
+        inputs: [{ name: 'owner', type: 'address' }],
+        name: 'balanceOf',
+        outputs: [{ name: '', type: 'uint256' }],
+        payable: false,
+        stateMutability: 'view',
+        type: 'function',
+      },
+    ],
   });
 
   if (status !== 'connected') {
