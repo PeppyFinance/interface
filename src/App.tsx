@@ -7,6 +7,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from './componen
 import { AssetSelector } from './components/AssetButton';
 import { WalletButton } from './components/WalletButton';
 import { BalanceDisplay } from './components/BalanceDisplay';
+import { PositionList } from './components/PositionList';
 
 function App() {
   return (
@@ -17,6 +18,9 @@ function App() {
         </div>
         <div className="pt-2">
           <BalanceDisplay />
+        </div>
+        <div className="pt-2">
+          <PositionList />
         </div>
         <div className="flex justify-between">
           <div>

@@ -4,6 +4,7 @@ import { defaultWagmiConfig } from '@web3modal/wagmi/react/config';
 import { WagmiProvider, http } from 'wagmi';
 import { localhost } from 'wagmi/chains';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { Client, Provider, cacheExchange, fetchExchange } from 'urql';
 
 // 0. Setup queryClient
 const queryClient = new QueryClient();
@@ -39,10 +40,18 @@ createWeb3Modal({
   enableAnalytics: true, // Optional - defaults to your Cloud configuration
 });
 
+// Setup graphqlClient
+const graphqlClient = new Client({
+  url: 'http://localhost:8080/v1/graphql',
+  exchanges: [cacheExchange, fetchExchange],
+});
+
 export function ContextProvider({ children }) {
   return (
     <WagmiProvider config={config}>
-      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+      <QueryClientProvider client={queryClient}>
+        <Provider value={graphqlClient}>{children}</Provider>
+      </QueryClientProvider>
     </WagmiProvider>
   );
 }
