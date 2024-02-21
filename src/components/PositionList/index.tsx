@@ -1,4 +1,5 @@
 import { gql, useQuery } from 'urql';
+import { formatEther } from 'viem';
 import { useAccount } from 'wagmi';
 
 const UserPositionsQuery = gql`
@@ -30,6 +31,15 @@ export function PositionList() {
 
   console.log(data);
 
-  return <div>data: {data?.toString()}</div>;
+  return (
+    <div>
+      <h1>Positions</h1>
+      <ul>
+        {data.Position.map(position => (
+          <li key={position.id}>{formatEther(position.collateral)} USDC</li>
+        ))}
+      </ul>
+    </div>
+  );
 }
 
