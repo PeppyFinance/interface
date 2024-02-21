@@ -8,6 +8,7 @@ import { AssetSelector } from './components/AssetButton';
 import { WalletButton } from './components/WalletButton';
 import { BalanceDisplay } from './components/BalanceDisplay';
 import { PositionList } from './components/PositionList';
+import { OpenPositionForm } from './components/OpenPositionForm';
 
 function App() {
   return (
@@ -21,6 +22,9 @@ function App() {
         </div>
         <div className="pt-2">
           <PositionList />
+        </div>
+        <div className="pt-2">
+          <OpenPositionForm />
         </div>
         <div className="flex justify-between">
           <div>
