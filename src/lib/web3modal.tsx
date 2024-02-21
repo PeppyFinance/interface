@@ -2,7 +2,7 @@ import { createWeb3Modal } from '@web3modal/wagmi/react';
 import { defaultWagmiConfig } from '@web3modal/wagmi/react/config';
 
 import { WagmiProvider, http } from 'wagmi';
-import { localhost } from 'wagmi/chains';
+import { foundry } from 'wagmi/chains';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Client, Provider, cacheExchange, fetchExchange } from 'urql';
 
@@ -19,12 +19,12 @@ const metadata = {
   icons: ['https://avatars.githubusercontent.com/u/37784886'],
 };
 
-const chains = [localhost] as const;
+const chains = [foundry] as const;
 const config = defaultWagmiConfig({
   chains, // required
   projectId, // required
   transports: {
-    [localhost.id]: http(),
+    [foundry.id]: http(),
   },
   metadata, // required
   enableWalletConnect: true, // Optional - true by default
