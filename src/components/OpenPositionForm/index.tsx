@@ -4,12 +4,14 @@ import { InfoCircledIcon } from '@radix-ui/react-icons';
 import { Input } from '../../components/ui/input';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '../../components/ui/card';
 import { AssetSelector } from '../../components/AssetButton';
+import { Slider } from '../../components/ui/slider';
 import { useState } from 'react';
 
 export function OpenPositionForm() {
   const { status } = useAccount();
   const [direction, setDirection] = useState<-1 | 1>(1);
   const [collateral, setCollateral] = useState<number>(0);
+  const [leverage, setLeverage] = useState<number>(5);
 
   if (status !== 'connected') {
     return <div>Connect your wallet to open a position.</div>;
@@ -73,6 +75,19 @@ export function OpenPositionForm() {
             className="font-bold"
             value={collateral}
             onChange={e => setCollateral(e.target.value)}
+          />
+        </div>
+      </div>
+      <div className="pt-2">
+        <div>
+          <p className="text-xxs">Leverage</p>
+        </div>
+        <div>
+          <Slider
+            min={1}
+            max={100}
+            value={leverage}
+            onChange={e => setLeverage(Number(e.target.value))}
           />
         </div>
       </div>
