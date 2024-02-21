@@ -5,13 +5,50 @@ import { Input } from '../../components/ui/input';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '../../components/ui/card';
 import { AssetSelector } from '../../components/AssetButton';
 import { Slider } from '../../components/ui/slider';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useWriteContract } from 'wagmi';
+
+import { collateralTokenAddress, tradePairAddress } from '@/lib/addresses';
+import * as tradePairAbi from '@/abi/TradePair.json';
+import { parseAbi, parseEther } from 'viem';
 
 export function OpenPositionForm() {
   const { status } = useAccount();
   const [direction, setDirection] = useState<-1 | 1>(1);
   const [collateral, setCollateral] = useState<number>(0);
   const [leverage, setLeverage] = useState<number>(5);
+
+  const { error, failureReason, writeContract } = useWriteContract();
+
+  const handleOpenPosition = async () => {
+    // const tx = await writeContract({
+    //   address: collateralTokenAddress,
+    //   abi: parseAbi(['function mint(uint256 amount) external']),
+    //   functionName: 'mint',
+    //   args: [parseEther(collateral) * BigInt(leverage)],
+    // });
+
+    // await writeContract({
+    //   address: collateralTokenAddress,
+    //   abi: parseAbi(['function approve(address spender, uint256 amount) external returns (bool)']),
+    //   functionName: 'approve',
+    //   args: [tradePairAddress, parseEther(collateral) * BigInt(leverage)],
+    // });
+
+    await writeContract({
+      address: tradePairAddress,
+      abi: tradePairAbi.abi,
+      functionName: 'openPosition',
+      args: [parseEther(collateral), leverage * 1000000, direction, []],
+    });
+  };
+
+  useEffect(() => {
+    if (error) {
+      console.error(error);
+      console.error(failureReason);
+    }
+  });
 
   if (status !== 'connected') {
     return <div>Connect your wallet to open a position.</div>;
@@ -122,7 +159,13 @@ export function OpenPositionForm() {
             </div>
           </CardContent>
           <CardFooter>
-            <Button className="w-full mr-2" fontWeight="heavy" size="lg" variant="primary">
+            <Button
+              className="w-full mr-2"
+              fontWeight="heavy"
+              size="lg"
+              variant="primary"
+              onClick={handleOpenPosition}
+            >
               OPEN POSITION
             </Button>
           </CardFooter>
