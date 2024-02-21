@@ -9,6 +9,7 @@ import { useState } from 'react';
 export function OpenPositionForm() {
   const { status } = useAccount();
   const [direction, setDirection] = useState<-1 | 1>(1);
+  const [collateral, setCollateral] = useState<number>(0);
 
   if (status !== 'connected') {
     return <div>Connect your wallet to open a position.</div>;
@@ -68,7 +69,11 @@ export function OpenPositionForm() {
             <InfoCircledIcon className="mr-2" />
             <p className="text-xs">Collateral in $USDC</p>
           </div>
-          <Input className="font-bold" />
+          <Input
+            className="font-bold"
+            value={collateral}
+            onChange={e => setCollateral(e.target.value)}
+          />
         </div>
       </div>
       <div className="pt-2">
