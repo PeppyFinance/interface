@@ -29,8 +29,6 @@ export function PositionList() {
 
   if (error) return <div>Error: {(error as BaseError).shortMessage || error.message || error}</div>;
 
-  console.log(data);
-
   return (
     <div>
       <h1>Positions</h1>
