@@ -4,9 +4,11 @@ import { InfoCircledIcon } from '@radix-ui/react-icons';
 import { Input } from '../../components/ui/input';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '../../components/ui/card';
 import { AssetSelector } from '../../components/AssetButton';
+import { useState } from 'react';
 
 export function OpenPositionForm() {
   const { status } = useAccount();
+  const [direction, setDirection] = useState<-1 | 1>(1);
 
   if (status !== 'connected') {
     return <div>Connect your wallet to open a position.</div>;
@@ -38,18 +40,20 @@ export function OpenPositionForm() {
           <Button
             className="w-full mr-2"
             fontSize="default"
-            fontWeight="medium"
+            fontWeight={direction === -1 ? 'heavy' : 'light'}
             size="sm"
             variant="destructive"
+            onClick={() => setDirection(-1)}
           >
             SHORT
           </Button>
           <Button
             className="w-full"
             fontSize="default"
-            fontWeight="medium"
+            fontWeight={direction === 1 ? 'heavy' : 'light'}
             size="sm"
             variant="constructive"
+            onClick={() => setDirection(1)}
           >
             LONG
           </Button>
