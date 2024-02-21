@@ -22,8 +22,12 @@ function App() {
         </div>
         <div className="flex justify-between">
           <div className="space-x-2">
-            <a className="font-thin underline">History</a>
-            <a className="font-thin underline">Orders</a>
+            <a href="#jo" className="font-thin underline">
+              History
+            </a>
+            <a href="#jo" className="font-thin underline">
+              Orders
+            </a>
           </div>
         </div>
       </div>
