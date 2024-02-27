@@ -1,29 +1,45 @@
-import { gql, useQuery } from 'urql';
+import { gql, useSubscription } from 'urql';
 import { formatEther } from 'viem';
 import { useAccount } from 'wagmi';
 
-const UserPositionsQuery = gql`
-  query UserPositions($owner: String!) {
+const newPositionsSubscription = gql`
+  subscription UserPositions($owner: String!) {
     Position(where: { owner: { _eq: $owner } }) {
       collateral
+      direction
+      entryTimestamp
       id
     }
   }
 `;
 
+const handleSubscription = (positions = [], response) => {
+  console.log(positions, response);
+  return [...response.Position];
+};
+
 export function PositionList() {
   const { address, status } = useAccount();
 
-  const [result] = useQuery({
-    query: UserPositionsQuery,
-    variables: { owner: address },
-  });
+  // const [result] = useQuery({
+  //   query: UserPositionsQuery,
+  //   variables: { owner: address },
+  // });
+  const [result] = useSubscription(
+    {
+      query: newPositionsSubscription,
+      variables: { owner: address },
+    },
+    handleSubscription
+  );
 
   if (status !== 'connected') {
     return <div>Connect your wallet to see your positions</div>;
   }
 
   const { data, fetching, error } = result;
+
+  console.log(data);
 
   if (fetching) return <div>Loading...</div>;
 
@@ -33,7 +49,7 @@ export function PositionList() {
     <div>
       <h1>Positions</h1>
       <ul>
-        {data.Position.map(position => (
+        {data.map(position => (
           <li key={position.id}>{formatEther(position.collateral)} USDC</li>
         ))}
       </ul>

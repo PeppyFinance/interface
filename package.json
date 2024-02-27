@@ -19,6 +19,7 @@
     "@web3modal/wagmi": "^4.0.5",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.0.0",
+    "graphql-ws": "^5.15.0",
     "lucide-react": "^0.294.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
