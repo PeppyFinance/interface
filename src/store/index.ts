@@ -1,14 +1,14 @@
 import { create } from 'zustand';
-import { Symbol } from '../types.ts';
+import { Market } from '../types.ts';
 
 interface AppState {
-  currentSymbol: Symbol;
+  currentMarket: Market;
 }
 
 export const useStore = create<AppState>()(set => ({
-  currentSymbol: Symbol.BTCUSD,
-  setCurrentSymbol: (newSymbol: Symbol) =>
+  currentMarket: Market.BTCUSD,
+  setCurrentMarket: (newMarket: Market) =>
     set(state => {
-      return { ...state, currentSymbol: newSymbol };
+      return { ...state, currentMarket: newMarket };
     }),
 }));
