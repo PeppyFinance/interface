@@ -14,7 +14,6 @@ const newPositionsSubscription = gql`
 `;
 
 const handleSubscription = (positions = [], response) => {
-  console.log(positions, response);
   return [...response.Position];
 };
 
@@ -34,8 +33,6 @@ export function PositionList() {
   }
 
   const { data, fetching, error } = result;
-
-  console.log(data);
 
   if (fetching) return <div>Loading...</div>;
 
