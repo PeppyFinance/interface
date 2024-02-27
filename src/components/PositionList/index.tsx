@@ -21,10 +21,6 @@ const handleSubscription = (positions = [], response) => {
 export function PositionList() {
   const { address, status } = useAccount();
 
-  // const [result] = useQuery({
-  //   query: UserPositionsQuery,
-  //   variables: { owner: address },
-  // });
   const [result] = useSubscription(
     {
       query: newPositionsSubscription,
