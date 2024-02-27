@@ -1,4 +1,4 @@
-import { useAccount } from 'wagmi';
+import { useAccount, useReadContract } from 'wagmi';
 import { Button } from '../../components/ui/button';
 import { InfoCircledIcon } from '@radix-ui/react-icons';
 import { Input } from '../../components/ui/input';
@@ -10,37 +10,52 @@ import { useWriteContract } from 'wagmi';
 
 import { collateralTokenAddress, tradePairAddress } from '@/lib/addresses';
 import * as tradePairAbi from '@/abi/TradePair.json';
-import { parseAbi, parseEther } from 'viem';
+import { erc20Abi, parseEther } from 'viem';
 
 export function OpenPositionForm() {
-  const { status } = useAccount();
+  const { status, address } = useAccount();
   const [direction, setDirection] = useState<-1 | 1>(1);
-  const [collateral, setCollateral] = useState<number>(0);
+  const [collateral, setCollateral] = useState<string>('0');
   const [leverage, setLeverage] = useState<number>(5);
 
+  const allowanceResult = useReadContract({
+    address: collateralTokenAddress,
+    abi: erc20Abi,
+    functionName: 'allowance',
+    args: [address, tradePairAddress],
+  });
+
+  const balanceResult = useReadContract({
+    address: collateralTokenAddress,
+    abi: erc20Abi,
+    functionName: 'balanceOf',
+    args: [address],
+  });
+
+  const buttonText =
+    balanceResult.data < parseEther(collateral)
+      ? 'Not enough funds'
+      : allowanceResult.data < parseEther(collateral)
+        ? 'Approve'
+        : 'Open Position';
   const { error, failureReason, writeContract } = useWriteContract();
 
-  const handleOpenPosition = async () => {
-    // const tx = await writeContract({
-    //   address: collateralTokenAddress,
-    //   abi: parseAbi(['function mint(uint256 amount) external']),
-    //   functionName: 'mint',
-    //   args: [parseEther(collateral) * BigInt(leverage)],
-    // });
-
-    // await writeContract({
-    //   address: collateralTokenAddress,
-    //   abi: parseAbi(['function approve(address spender, uint256 amount) external returns (bool)']),
-    //   functionName: 'approve',
-    //   args: [tradePairAddress, parseEther(collateral) * BigInt(leverage)],
-    // });
-
-    await writeContract({
-      address: tradePairAddress,
-      abi: tradePairAbi.abi,
-      functionName: 'openPosition',
-      args: [parseEther(collateral), leverage * 1000000, direction, []],
-    });
+  const handleSubmit = async () => {
+    if (allowanceResult.data < parseEther(collateral)) {
+      await writeContract({
+        address: collateralTokenAddress,
+        abi: erc20Abi,
+        functionName: 'approve',
+        args: [tradePairAddress, parseEther(collateral)],
+      });
+    } else {
+      await writeContract({
+        address: tradePairAddress,
+        abi: tradePairAbi.abi,
+        functionName: 'openPosition',
+        args: [parseEther(collateral), leverage * 1000000, direction, []],
+      });
+    }
   };
 
   useEffect(() => {
@@ -111,6 +126,7 @@ export function OpenPositionForm() {
           <Input
             className="font-bold"
             value={collateral}
+            type="number"
             onChange={e => setCollateral(e.target.value)}
           />
         </div>
@@ -164,9 +180,9 @@ export function OpenPositionForm() {
               fontWeight="heavy"
               size="lg"
               variant="primary"
-              onClick={handleOpenPosition}
+              onClick={handleSubmit}
             >
-              OPEN POSITION
+              {buttonText}
             </Button>
           </CardFooter>
         </Card>
