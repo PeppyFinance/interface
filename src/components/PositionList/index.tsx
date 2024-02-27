@@ -13,26 +13,20 @@ const newPositionsSubscription = gql`
   }
 `;
 
-const handleSubscription = (positions = [], response) => {
-  return [...response.Position];
-};
-
 export function PositionList() {
   const { address, status } = useAccount();
 
-  const [result] = useSubscription(
-    {
-      query: newPositionsSubscription,
-      variables: { owner: address },
-    },
-    handleSubscription
-  );
+  const [result] = useSubscription({
+    query: newPositionsSubscription,
+    variables: { owner: address },
+  });
 
   if (status !== 'connected') {
     return <div>Connect your wallet to see your positions</div>;
   }
 
   const { data, fetching, error } = result;
+  console.log(data);
 
   if (fetching) return <div>Loading...</div>;
 
@@ -42,7 +36,7 @@ export function PositionList() {
     <div>
       <h1>Positions</h1>
       <ul>
-        {data.map(position => (
+        {data.Position.map(position => (
           <li key={position.id}>{formatEther(position.collateral)} USDC</li>
         ))}
       </ul>
