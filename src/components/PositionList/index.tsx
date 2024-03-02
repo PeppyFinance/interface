@@ -1,12 +1,14 @@
 import { gql, useSubscription } from 'urql';
-import { formatEther } from 'viem';
 import { useAccount } from 'wagmi';
+import { OpenPosition } from './OpenPosition';
 
 const newPositionsSubscription = gql`
   subscription UserPositions($owner: String!) {
     Position(where: { owner_id: { _eq: $owner } }) {
       collateral
       direction
+      entryVolume
+      entryPrice
       entryTimestamp
       id
     }
@@ -37,7 +39,7 @@ export function PositionList() {
       <h1>Positions</h1>
       <ul>
         {data.Position.map(position => (
-          <li key={position.id}>{formatEther(position.collateral)} USDC</li>
+          <OpenPosition key={position.id} position={position} />
         ))}
       </ul>
     </div>
