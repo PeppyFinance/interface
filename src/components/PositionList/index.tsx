@@ -4,7 +4,7 @@ import { useAccount } from 'wagmi';
 
 const newPositionsSubscription = gql`
   subscription UserPositions($owner: String!) {
-    Position(where: { owner: { _eq: $owner } }) {
+    Position(where: { owner_id: { _eq: $owner } }) {
       collateral
       direction
       entryTimestamp
