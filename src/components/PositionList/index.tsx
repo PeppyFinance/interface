@@ -4,7 +4,7 @@ import { OpenPosition } from './OpenPosition';
 
 const newPositionsSubscription = gql`
   subscription UserPositions($owner: String!) {
-    Position(where: { owner_id: { _eq: $owner } }) {
+    Position(where: { owner_id: { _eq: $owner }, isOpen: { _eq: true } }) {
       collateral
       direction
       entryVolume
