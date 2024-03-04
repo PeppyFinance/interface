@@ -2,6 +2,7 @@ import './App.css';
 import { WalletButton } from './components/WalletButton';
 import { BalanceDisplay } from './components/BalanceDisplay';
 import { PositionList } from './components/PositionList';
+import { ClosedPositionList } from './components/ClosedPositionList';
 import { OpenPositionForm } from './components/OpenPositionForm';
 
 function App() {
@@ -16,6 +17,9 @@ function App() {
         </div>
         <div className="pt-2">
           <PositionList />
+        </div>
+        <div className="pt-2">
+          <ClosedPositionList />
         </div>
         <div className="pt-2">
           <OpenPositionForm />

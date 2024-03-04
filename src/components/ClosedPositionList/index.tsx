@@ -1,25 +1,30 @@
 import { gql, useSubscription } from 'urql';
 import { useAccount } from 'wagmi';
-import { OpenPosition } from './OpenPosition';
+import { ClosedPosition } from './ClosedPosition';
 
-const newPositionsSubscription = gql`
+const closedPositionsSubscription = gql`
   subscription UserPositions($owner: String!) {
-    Position(where: { owner_id: { _eq: $owner }, isOpen: { _eq: true } }) {
+    Position(where: { owner_id: { _eq: $owner }, isOpen: { _eq: false } }) {
       collateral
       direction
       entryVolume
       entryPrice
       entryTimestamp
+      closePrice
+      totalPnL
+      pnl
+      borrowFeeAmount
+      fundingFeeAmount
       id
     }
   }
 `;
 
-export function PositionList() {
+export function ClosedPositionList() {
   const { address, status } = useAccount();
 
   const [result] = useSubscription({
-    query: newPositionsSubscription,
+    query: closedPositionsSubscription,
     variables: { owner: address },
   });
 
@@ -35,10 +40,10 @@ export function PositionList() {
 
   return (
     <div>
-      <h1>Positions</h1>
+      <h1>Closed Positions / Trades</h1>
       <ul>
         {data.Position.map(position => (
-          <OpenPosition key={position.id} position={position} />
+          <ClosedPosition key={position.id} position={position} />
         ))}
       </ul>
     </div>
