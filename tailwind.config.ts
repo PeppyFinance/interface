@@ -1,5 +1,6 @@
 import type { Config } from 'tailwindcss';
 import animatePlugin from 'tailwindcss-animate';
+import plugin from 'tailwindcss/plugin';
 
 export default {
   darkMode: ['class'],
@@ -59,10 +60,19 @@ export default {
         glass: {
           DEFAULT: 'hsla(var(--glass))',
         },
+        darkGlass: {
+          DEFAULT: 'hsla(var(--dark-glass))',
+        },
       },
       boxShadow: {
         default:
           '0px 0px 3px 0px rgba(254, 251, 224, 0.20) inset, 0px 4px 4px 0px rgba(0, 0, 0, 0.25)',
+      },
+      textShadow: {
+        DEFAULT: '0px 0px 4px #FFF, 0px 4px 4px rgba(0, 0, 0, 0.25)',
+      },
+      dropShadow: {
+        '3xl': '0px 4px 34px rgba(0, 0, 0, 0.65)',
       },
       fontSize: {
         xxs: '0.6rem',
@@ -86,5 +96,17 @@ export default {
       },
     },
   },
-  plugins: [animatePlugin],
+  plugins: [
+    animatePlugin,
+    plugin(function ({ matchUtilities, theme }) {
+      matchUtilities(
+        {
+          'text-shadow': value => ({
+            textShadow: value,
+          }),
+        },
+        { values: theme('textShadow') }
+      );
+    }),
+  ],
 } satisfies Config;
