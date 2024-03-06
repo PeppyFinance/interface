@@ -19,7 +19,7 @@ import {
   DrawerTrigger,
 } from '../ui/drawer';
 import { ScrollArea } from '../ui/scroll-area';
-import { ReactNode, useState } from 'react';
+import { ReactNode, useMemo, useState } from 'react';
 import classNames from 'classnames';
 
 interface Asset {
@@ -106,7 +106,7 @@ const TriggerButton = () => {
             {assets.map(asset => (
               <div
                 className={classNames('flex', {
-                  'bg-white/50 border rounded-lg': asset.key === selectedAsset?.key,
+                  'bg-white/25 border rounded-lg': asset.key === selectedAsset?.key,
                 })}
                 onClick={() => setSelectedAsset(asset)}
               >

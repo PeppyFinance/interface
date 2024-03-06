@@ -4,16 +4,42 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/componen
 import { Input } from '@/components/ui/input';
 import { Slider } from '@/components/ui/slider';
 import { InfoCircledIcon } from '@radix-ui/react-icons';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
+import { useMaskito } from '@maskito/react';
+import { maskitoNumberOptionsGenerator } from '@maskito/kit';
+
+const DollarMask = maskitoNumberOptionsGenerator({
+  precision: 0,
+  thousandSeparator: ',',
+  prefix: '$ ',
+  max: 1_000_000_000,
+  min: 0,
+});
+
+function parseCollateral(collateralString: string): bigint {
+  return BigInt(collateralString.replaceAll('$', '').replaceAll(',', '').replaceAll(' ', ''));
+}
+
+function formatPositionSize(positionSize: bigint): string {
+  return new Intl.NumberFormat().format(positionSize).toString();
+}
 
 export const Exchange = () => {
+  const [collateral, setCollateral] = useState<string>('$ 0');
   const [leverage, setLeverage] = useState<number>(2);
+
+  const positionSize = useMemo(
+    () => parseCollateral(collateral) * BigInt(leverage),
+    [collateral, leverage]
+  );
+
+  const maskedInputRef = useMaskito({ options: DollarMask });
 
   return (
     <div className="px-3 py-2 h-full flex flex-col">
       <div className="flex justify-between">
         <div>
-          <h1 className="font-medium">History</h1>
+          <h1 className="font-medium">Trading</h1>
           <h2>Buy Position</h2>
         </div>
         <div className="space-x-2">
@@ -30,7 +56,7 @@ export const Exchange = () => {
           <Button className="w-full mr-2" fontWeight="heavy" size="lg" variant="default">
             TRADE
           </Button>
-          <Button className="w-full" fontWeight="heavy" size="lg" variant="default">
+          <Button disabled className="w-full" fontWeight="heavy" size="lg" variant="default">
             LIMIT
           </Button>
         </div>
@@ -67,7 +93,12 @@ export const Exchange = () => {
             <InfoCircledIcon className="mr-2" />
             <p className="text-xs">Collateral in $USDC</p>
           </div>
-          <Input className="font-bold" />
+          <Input
+            ref={maskedInputRef}
+            className="font-bold"
+            value={collateral}
+            onInput={e => setCollateral(e.currentTarget.value)}
+          />
         </div>
       </div>
       <div className="pt-2">
@@ -93,20 +124,24 @@ export const Exchange = () => {
               <p>{leverage}.0x</p>
             </div>
             <div className="flex justify-between">
+              <p>Position Size</p>
+              <p>${formatPositionSize(positionSize)}</p>
+            </div>
+            <div className="flex justify-between">
               <p>Entry Price</p>
-              <p>3,000$</p>
+              <p>$3,000</p>
             </div>
             <div className="flex justify-between">
               <p>Liquidation Price</p>
-              <p>2,000$</p>
+              <p>$2,000</p>
             </div>
             <div className="flex justify-between">
               <p>Take Profit At</p>
-              <p>3,500$</p>
+              <p>$3,500</p>
             </div>
             <div className="flex justify-between">
               <p>Fees</p>
-              <p>4.50$</p>
+              <p>$4.50</p>
             </div>
             <div className="mt-1">
               <p className="underline">More</p>

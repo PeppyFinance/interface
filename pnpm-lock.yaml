@@ -5,6 +5,15 @@ settings:
   excludeLinksFromLockfile: false
 
 dependencies:
+  '@maskito/core':
+    specifier: ^2.1.0
+    version: 2.1.0
+  '@maskito/kit':
+    specifier: ^2.1.0
+    version: 2.1.0(@maskito/core@2.1.0)
+  '@maskito/react':
+    specifier: ^2.1.0
+    version: 2.1.0(@maskito/core@2.1.0)(react-dom@18.2.0)(react@18.2.0)
   '@radix-ui/react-dialog':
     specifier: ^1.0.5
     version: 1.0.5(@types/react-dom@18.2.17)(@types/react@18.2.42)(react-dom@18.2.0)(react@18.2.0)
@@ -2417,6 +2426,30 @@ packages:
     resolution: {integrity: sha512-GFn91inaUa2oHLak8awSIigYz0cU0Payr1rcFsrkf5OJ5eSPxElyZfKh0f2p9FsTiZWXQdWGJeXZICEfXXYSXQ==}
     dependencies:
       '@lit-labs/ssr-dom-shim': 1.2.0
+    dev: false
+
+  /@maskito/core@2.1.0:
+    resolution: {integrity: sha512-tFrNPBK5m9O8n5RIeZ+0eYcZv2x2e4k0JGEpezuOIo+9JW6Kf6uID8mFnrIgiqa6V8BdYrld+VYqwPzltn4TnQ==}
+    dev: false
+
+  /@maskito/kit@2.1.0(@maskito/core@2.1.0):
+    resolution: {integrity: sha512-XS4Z+KIFSoo91225GqOWoKVOrnMMn2C5hzXS2RcXgsghCiN8IBEP2X8afHJsJ5dnO+twAcIziiuzP7ekb4lMLw==}
+    peerDependencies:
+      '@maskito/core': ^2.1.0
+    dependencies:
+      '@maskito/core': 2.1.0
+    dev: false
+
+  /@maskito/react@2.1.0(@maskito/core@2.1.0)(react-dom@18.2.0)(react@18.2.0):
+    resolution: {integrity: sha512-rZqID6DkDjjC8LTqFLgU3SO6OrNmGV8VdWroF/hupUYJty0HTXKpHI2Y9TFGlucUl0KP38qMoQCF1f6P5IZ/0A==}
+    peerDependencies:
+      '@maskito/core': ^2.1.0
+      react: '>=16.8'
+      react-dom: '>=16.8'
+    dependencies:
+      '@maskito/core': 2.1.0
+      react: 18.2.0
+      react-dom: 18.2.0(react@18.2.0)
     dev: false
 
   /@metamask/eth-json-rpc-provider@1.0.1:
