@@ -1,8 +1,26 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel';
+import { useWeb3Modal } from '@web3modal/wagmi/react';
+import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAccount } from 'wagmi';
 
 export const LandingPage = () => {
+  const navigate = useNavigate();
+  const { open } = useWeb3Modal();
+  const { isConnected } = useAccount();
+
+  const onWalletConnect = async () => {
+    await open();
+  };
+
+  useEffect(() => {
+    if (isConnected) {
+      navigate('/exchange');
+    }
+  }, [isConnected]);
+
   return (
     <div className="h-full w-full relative">
       <Carousel className="w-full h-full">
@@ -27,7 +45,7 @@ export const LandingPage = () => {
         </CarouselContent>
       </Carousel>
       <div className="absolute bottom-[16px] flex w-full justify-center">
-        <Button variant="primary" size="lg">
+        <Button variant="primary" size="lg" onClick={onWalletConnect}>
           <p className="font-bold">CONNECT WALLET</p>
         </Button>
       </div>
