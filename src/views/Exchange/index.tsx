@@ -2,9 +2,13 @@ import { AssetSelector } from '@/components/AssetButton';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Slider } from '@/components/ui/slider';
 import { InfoCircledIcon } from '@radix-ui/react-icons';
+import { useState } from 'react';
 
 export const Exchange = () => {
+  const [leverage, setLeverage] = useState<number>(2);
+
   return (
     <div className="px-3 py-2 h-full flex flex-col">
       <div className="flex justify-between">
@@ -67,152 +71,16 @@ export const Exchange = () => {
         </div>
       </div>
       <div className="pt-2">
-        <div className="flex justify-between">
-          <div>
-            <div className="flex mb-1">
-              <InfoCircledIcon className="mr-2" />
-              <span className="text-xs">Leverage</span>
-            </div>
-            <div className="flex flex-col space-y-2">
-              <Button
-                className="w-full mr-2 px-1"
-                fontSize="default"
-                fontWeight="medium"
-                size="sm"
-                variant="default"
-              >
-                <img src="/rocket.svg" alt="rocket" />
-                <span className="text-xs font-bold ml-2">20x</span>
-              </Button>
-              <Button
-                className="w-full mr-2 px-1"
-                fontSize="default"
-                fontWeight="medium"
-                size="sm"
-                variant="default"
-              >
-                <img src="/truck.svg" alt="rocket" />
-                <span className="text-xs font-bold ml-2">10x</span>
-              </Button>
-              <Button
-                className="w-full mr-2 px-1"
-                fontSize="default"
-                fontWeight="medium"
-                size="sm"
-                variant="default"
-              >
-                <img src="/bike.svg" alt="rocket" />
-                <span className="text-xs font-bold ml-2">5x</span>
-              </Button>
-              <Button
-                className="w-full mr-2 px-1"
-                fontSize="default"
-                fontWeight="medium"
-                size="sm"
-                variant="default"
-              >
-                <img src="/function.svg" alt="rocket" />
-                <span className="text-xs font-bold ml-2">custom</span>
-              </Button>
-            </div>
-          </div>
-          <div>
-            <div className="flex mb-1">
-              <InfoCircledIcon className="mr-2" />
-              <span className="text-xs">Take Profit</span>
-            </div>
-            <div className="flex flex-col space-y-2">
-              <Button
-                className="w-full mr-2 px-1"
-                fontSize="default"
-                fontWeight="medium"
-                size="sm"
-                variant="default"
-              >
-                <img src="/trending-up.svg" alt="rocket" />
-                <span className="text-xs font-bold ml-2">900%</span>
-              </Button>
-              <Button
-                className="w-full mr-2 px-1"
-                fontSize="default"
-                fontWeight="medium"
-                size="sm"
-                variant="default"
-              >
-                <img src="/dollar-sign.svg" alt="rocket" />
-                <span className="text-xs font-bold ml-2">400%</span>
-              </Button>
-              <Button
-                className="w-full mr-2 px-1"
-                fontSize="default"
-                fontWeight="medium"
-                size="sm"
-                variant="default"
-              >
-                <img src="/piggy-bank.svg" alt="rocket" />
-                <span className="text-xs font-bold ml-2">100%</span>
-              </Button>
-              <Button
-                className="w-full mr-2 px-1"
-                fontSize="default"
-                fontWeight="medium"
-                size="sm"
-                variant="default"
-              >
-                <img src="/function.svg" alt="rocket" />
-                <span className="text-xs font-bold ml-2">custom</span>
-              </Button>
-            </div>
-          </div>
-          <div>
-            <div className="flex mb-1">
-              <InfoCircledIcon className="mr-2" />
-              <span className="text-xs">Stop Loss</span>
-            </div>
-            <div className="flex flex-col space-y-2">
-              <Button
-                className="w-full mr-2 px-1"
-                fontSize="default"
-                fontWeight="medium"
-                size="sm"
-                variant="default"
-              >
-                <img src="/unlock.svg" alt="rocket" />
-                <span className="text-xs font-bold ml-2">NONE</span>
-              </Button>
-              <Button
-                className="w-full mr-2 px-1"
-                fontSize="default"
-                fontWeight="medium"
-                size="sm"
-                variant="default"
-              >
-                <img src="/lock.svg" alt="rocket" />
-                <span className="text-xs font-bold ml-2">-25%</span>
-              </Button>
-              <Button
-                className="w-full mr-2 px-1"
-                fontSize="default"
-                fontWeight="medium"
-                size="sm"
-                variant="default"
-              >
-                <img src="/landmark.svg" alt="rocket" />
-                <span className="text-xs font-bold ml-2">-50%</span>
-              </Button>
-              <Button
-                className="w-full mr-2 px-1"
-                fontSize="default"
-                fontWeight="medium"
-                size="sm"
-                variant="default"
-              >
-                <img src="/function.svg" alt="rocket" />
-                <span className="text-xs font-bold ml-2">custom</span>
-              </Button>
-            </div>
-          </div>
+        <div className="flex mb-1">
+          <InfoCircledIcon className="mr-2" />
+          <span className="text-xs">Leverage</span>
         </div>
+        <Slider
+          value={leverage}
+          step={1}
+          max={100}
+          onChange={e => setLeverage(Number(e.target.value))}
+        />
       </div>
       <div className="pt-3 min-h-[16rem]">
         <Card className="h-full">
@@ -221,8 +89,8 @@ export const Exchange = () => {
           </CardHeader>
           <CardContent>
             <div className="flex justify-between">
-              <p>Estimated Profit</p>
-              <p>200$</p>
+              <p>Leverage</p>
+              <p>{leverage}.0x</p>
             </div>
             <div className="flex justify-between">
               <p>Entry Price</p>
