@@ -8,9 +8,10 @@ import { useMemo, useState } from 'react';
 import { useMaskito } from '@maskito/react';
 import { maskitoNumberOptionsGenerator } from '@maskito/kit';
 import { collateralTokenAddress, tradePairAddress } from '@/lib/addresses';
-import { useAccount, useReadContract } from 'wagmi';
-import { erc20Abi, parseEther } from 'viem';
+import { useAccount, useReadContract, useWriteContract } from 'wagmi';
+import { erc20Abi, parseEther, formatEther } from 'viem';
 import { useNavigate } from 'react-router-dom';
+import * as tradePairAbi from '@/abi/TradePair.json';
 
 const DollarMask = maskitoNumberOptionsGenerator({
   precision: 0,
@@ -25,20 +26,32 @@ function parseCollateral(collateralString: string): bigint {
 }
 
 function formatPositionSize(positionSize: bigint): string {
-  return new Intl.NumberFormat().format(positionSize).toString();
+  return new Intl.NumberFormat().format(BigInt(formatEther(positionSize))).toString();
 }
 
 export const Exchange = () => {
   const navigate = useNavigate();
-  const { address } = useAccount();
+  const { address, isConnected } = useAccount();
+  const { error, failureReason, writeContract } = useWriteContract();
+  const maskedInputRef = useMaskito({ options: DollarMask });
 
-  if (address === undefined) {
+  if (address === undefined || !isConnected) {
     navigate('/');
     return;
   }
 
   const [collateral, setCollateral] = useState<string>('$ 0');
   const [leverage, setLeverage] = useState<number>(2);
+  const [direction, setDirection] = useState<1 | -1>(1);
+
+  const parsedCollateral = useMemo(
+    () => parseEther(String(parseCollateral(collateral))),
+    [collateral]
+  );
+  const positionSize = useMemo(
+    () => parsedCollateral * BigInt(leverage),
+    [parsedCollateral, leverage]
+  );
 
   const { data: balance } = useReadContract({
     address: collateralTokenAddress,
@@ -55,31 +68,47 @@ export const Exchange = () => {
   });
 
   const hasEnoughBalance = useMemo(
-    () => balance !== undefined && balance < parseEther(collateral),
+    () => balance !== undefined && balance >= parsedCollateral,
     [balance, collateral]
   );
 
   const hasEnoughAllowance = useMemo(
-    () => allowance !== undefined && allowance < parseEther(collateral),
+    () => allowance !== undefined && allowance >= parsedCollateral,
     [allowance, collateral]
   );
 
+  const hasSufficientSize = useMemo(() => positionSize > 0n, [positionSize]);
+
   const buttonText = useMemo(
     () =>
-      !hasEnoughBalance
-        ? 'Not enough funds'
-        : !hasEnoughAllowance
-          ? 'Allowance to low'
-          : 'Open Position',
-    [hasEnoughBalance, hasEnoughAllowance]
+      !hasSufficientSize
+        ? 'Insufficient size'
+        : !hasEnoughBalance
+          ? 'Not enough funds'
+          : !hasEnoughAllowance
+            ? 'Approve'
+            : 'Open Position',
+    [hasSufficientSize, hasEnoughBalance, hasEnoughAllowance]
   );
 
-  const positionSize = useMemo(
-    () => parseCollateral(collateral) * BigInt(leverage),
-    [collateral, leverage]
-  );
-
-  const maskedInputRef = useMaskito({ options: DollarMask });
+  const handleOpenPosition = () => {
+    if (!hasEnoughAllowance) {
+      writeContract({
+        address: collateralTokenAddress,
+        abi: erc20Abi,
+        functionName: 'approve',
+        args: [tradePairAddress, parseEther(collateral)],
+      });
+    } else {
+      writeContract({
+        address: tradePairAddress,
+        abi: tradePairAbi.abi,
+        functionName: 'openPosition',
+        // TODO: place price data in here
+        args: [parseEther(collateral), leverage * 1_000_000, direction, []],
+      });
+    }
+  };
 
   return (
     <div className="px-3 py-2 h-full flex flex-col">
@@ -93,11 +122,11 @@ export const Exchange = () => {
           <a className="font-thin underline">Orders</a>
         </div>
       </div>
-      <div className="pt-2">
+      <div className="pt-3">
         <AssetSelector />
       </div>
-      <div className="pt-2">
-        <p className="text-xxs">Type of Position</p>
+      <div className="pt-3">
+        <p className="text-xxs pb-1">Type of Position</p>
         <div className="flex">
           <Button className="w-full mr-2" fontWeight="heavy" size="lg" variant="default">
             TRADE
@@ -107,32 +136,34 @@ export const Exchange = () => {
           </Button>
         </div>
       </div>
-      <div className="pt-2">
-        <p className="text-xxs">Type of Speculation</p>
-        <div className="flex">
+      <div className="pt-3">
+        <p className="text-xxs pb-1">Type of Speculation</p>
+        <div className="flex space-x-2">
           <Button
-            className="w-full mr-2"
+            className="w-full"
             fontSize="default"
             fontWeight="medium"
-            size="sm"
-            variant="destructive"
+            size="lg"
+            variant={direction === 1 ? 'constructive' : 'default'}
+            onClick={() => setDirection(1)}
           >
-            SHORT
+            LONG
           </Button>
           <Button
             className="w-full"
             fontSize="default"
             fontWeight="medium"
-            size="sm"
-            variant="constructive"
+            size="lg"
+            variant={direction === -1 ? 'destructive' : 'default'}
+            onClick={() => setDirection(-1)}
           >
-            LONG
+            SHORT
           </Button>
         </div>
       </div>
-      <div className="pt-2">
+      <div className="pt-3">
         <div>
-          <p className="text-xxs">Venture Parameters</p>
+          <p className="text-xxs pb-1">Venture Parameters</p>
         </div>
         <div>
           <div className="flex mb-1">
@@ -147,7 +178,7 @@ export const Exchange = () => {
           />
         </div>
       </div>
-      <div className="pt-2">
+      <div className="pt-3">
         <div className="flex mb-1">
           <InfoCircledIcon className="mr-2" />
           <span className="text-xs">Leverage</span>
@@ -195,11 +226,12 @@ export const Exchange = () => {
           </CardContent>
           <CardFooter>
             <Button
-              disabled={!hasEnoughBalance || !hasEnoughAllowance}
+              disabled={!hasEnoughBalance || !hasSufficientSize}
               className="w-full mr-2"
               fontWeight="heavy"
               size="lg"
-              variant="primary"
+              variant={direction === 1 ? 'constructive' : 'destructive'}
+              onClick={handleOpenPosition}
             >
               {buttonText}
             </Button>
