@@ -19,8 +19,19 @@ import {
   DrawerTrigger,
 } from '../ui/drawer';
 import { ScrollArea } from '../ui/scroll-area';
-import { ReactNode, useMemo, useState } from 'react';
+import { ReactNode, useState } from 'react';
 import classNames from 'classnames';
+import { Market } from '@/types';
+import { useStore } from '@/store';
+
+// TODO: format price based on significant decimals
+// i.e. the precision for SHIB should be higher than ETH.
+//
+// NOTE: @valentin, I implemented something like this somewhere,
+// going to replase.
+function formatPrice(price: number): string {
+  return new Intl.NumberFormat().format(price);
+}
 
 interface Asset {
   key: string;
@@ -56,39 +67,57 @@ const assets = [
   {
     key: 'eth',
     value: 'ETH',
+    market: Market.ETHUSD,
   },
   {
     key: 'btc',
     value: 'BTC',
+    market: Market.BTCUSD,
   },
   {
     key: 'ltc',
     value: 'LTC',
+    market: Market.LTCUSD,
   },
   {
     key: 'iota',
     value: 'IOTA',
+    market: Market.IOTAUSD,
   },
   {
     key: 'avax',
     value: 'AVAX',
+    market: Market.AVAXUSD,
   },
   {
     key: 'doge',
     value: 'DOGE',
+    market: Market.DOGEUSD,
   },
   {
     key: 'shib',
     value: 'SHIB',
+    market: Market.SHIBUSD,
   },
 ];
 
 const TriggerButton = () => {
-  const [selectedAsset, setSelectedAsset] = useState<{ key: string; value: string } | null>(null);
-  const [chosenAsset, setChosenAsset] = useState<{ key: string; value: string }>({
+  const { marketsState } = useStore();
+  const [selectedAsset, setSelectedAsset] = useState<{
+    key: string;
+    value: string;
+    market: Market;
+  } | null>(null);
+
+  // TODO: this should be dispatched to the global store, so other
+  // components can consume the current price of current asset.
+  const [chosenAsset, setChosenAsset] = useState<{ key: string; value: string; market: Market }>({
     key: 'eth',
     value: 'ETH',
+    market: Market.ETHUSD,
   });
+
+  const assetPrice = marketsState[chosenAsset.market]?.currentPrice;
 
   return (
     <div className="flex w-full h-16 justify-between px-4">
@@ -130,7 +159,7 @@ const TriggerButton = () => {
         </DrawerContent>
       </Drawer>
       <div className="flex flex-col items-center justify-center">
-        <p className="text-lg">3,000 $</p>
+        <p className="text-lg">{assetPrice ? '$ ' + formatPrice(assetPrice) : '$ ...'}</p>
         <p className="text-xxs underline">observe in graph</p>
       </div>
     </div>

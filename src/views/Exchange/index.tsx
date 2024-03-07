@@ -4,7 +4,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/componen
 import { Input } from '@/components/ui/input';
 import { Slider } from '@/components/ui/slider';
 import { InfoCircledIcon } from '@radix-ui/react-icons';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useMaskito } from '@maskito/react';
 import { maskitoNumberOptionsGenerator } from '@maskito/kit';
 import { collateralTokenAddress, tradePairAddress } from '@/lib/addresses';
@@ -12,6 +12,7 @@ import { useAccount, useReadContract, useWriteContract } from 'wagmi';
 import { erc20Abi, parseEther, formatEther } from 'viem';
 import { useNavigate } from 'react-router-dom';
 import * as tradePairAbi from '@/abi/TradePair.json';
+import { subscribeToPriceFeeds, unsubscribeToPriceFeeds } from '@/lib/pyth';
 
 const DollarMask = maskitoNumberOptionsGenerator({
   precision: 0,
@@ -109,6 +110,12 @@ export const Exchange = () => {
       });
     }
   };
+
+  useEffect(() => {
+    subscribeToPriceFeeds();
+    // NOTE: clean up on unmount
+    return unsubscribeToPriceFeeds;
+  }, []);
 
   return (
     <div className="px-3 py-2 h-full flex flex-col">
