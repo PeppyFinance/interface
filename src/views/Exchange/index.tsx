@@ -7,6 +7,10 @@ import { InfoCircledIcon } from '@radix-ui/react-icons';
 import { useMemo, useState } from 'react';
 import { useMaskito } from '@maskito/react';
 import { maskitoNumberOptionsGenerator } from '@maskito/kit';
+import { collateralTokenAddress, tradePairAddress } from '@/lib/addresses';
+import { useAccount, useReadContract } from 'wagmi';
+import { erc20Abi, parseEther } from 'viem';
+import { useNavigate } from 'react-router-dom';
 
 const DollarMask = maskitoNumberOptionsGenerator({
   precision: 0,
@@ -25,8 +29,50 @@ function formatPositionSize(positionSize: bigint): string {
 }
 
 export const Exchange = () => {
+  const navigate = useNavigate();
+  const { address } = useAccount();
+
+  if (address === undefined) {
+    navigate('/');
+    return;
+  }
+
   const [collateral, setCollateral] = useState<string>('$ 0');
   const [leverage, setLeverage] = useState<number>(2);
+
+  const { data: balance } = useReadContract({
+    address: collateralTokenAddress,
+    abi: erc20Abi,
+    functionName: 'balanceOf',
+    args: [address],
+  });
+
+  const { data: allowance } = useReadContract({
+    address: collateralTokenAddress,
+    abi: erc20Abi,
+    functionName: 'allowance',
+    args: [address, tradePairAddress],
+  });
+
+  const hasEnoughBalance = useMemo(
+    () => balance !== undefined && balance < parseEther(collateral),
+    [balance, collateral]
+  );
+
+  const hasEnoughAllowance = useMemo(
+    () => allowance !== undefined && allowance < parseEther(collateral),
+    [allowance, collateral]
+  );
+
+  const buttonText = useMemo(
+    () =>
+      !hasEnoughBalance
+        ? 'Not enough funds'
+        : !hasEnoughAllowance
+          ? 'Allowance to low'
+          : 'Open Position',
+    [hasEnoughBalance, hasEnoughAllowance]
+  );
 
   const positionSize = useMemo(
     () => parseCollateral(collateral) * BigInt(leverage),
@@ -148,8 +194,14 @@ export const Exchange = () => {
             </div>
           </CardContent>
           <CardFooter>
-            <Button className="w-full mr-2" fontWeight="heavy" size="lg" variant="primary">
-              OPEN POSITION
+            <Button
+              disabled={!hasEnoughBalance || !hasEnoughAllowance}
+              className="w-full mr-2"
+              fontWeight="heavy"
+              size="lg"
+              variant="primary"
+            >
+              {buttonText}
             </Button>
           </CardFooter>
         </Card>

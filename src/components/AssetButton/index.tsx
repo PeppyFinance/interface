@@ -105,6 +105,7 @@ const TriggerButton = () => {
           <ScrollArea className="mx-4">
             {assets.map(asset => (
               <div
+                key={asset.key}
                 className={classNames('flex', {
                   'bg-white/25 border rounded-lg': asset.key === selectedAsset?.key,
                 })}
