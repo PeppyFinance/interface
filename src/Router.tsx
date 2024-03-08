@@ -2,12 +2,16 @@ import { Route, createBrowserRouter, createRoutesFromElements } from 'react-rout
 import { Exchange } from './views/Exchange';
 import { Layout } from './Layout';
 import { LandingPage } from './views/LandingPage';
+import { PositionList } from './components/PositionList';
+import { Pool } from './views/Pool';
 
 export const router = createBrowserRouter(
   createRoutesFromElements(
     <Route path="/" element={<Layout />}>
       <Route path="/" element={<LandingPage />} />
       <Route path="/exchange" element={<Exchange />} />
+      <Route path="/positions" element={<PositionList />} />
+      <Route path="/pool" element={<Pool />} />
     </Route>
   )
 );

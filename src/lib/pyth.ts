@@ -20,6 +20,7 @@ function storePrice(priceFeed: PriceFeed) {
   const price = Number(priceStruct.price) * 10 ** priceStruct.expo;
 
   useStore.getState().setMarketState(priceFeedIdToMarketMap[priceFeed.id.toLowerCase()], {
+    priceFeedId: priceFeed.id,
     currentPrice: price,
     confidence: Number(priceStruct.conf),
     publishTime: new Date(priceStruct.publishTime),

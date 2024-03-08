@@ -19,19 +19,11 @@ import {
   DrawerTrigger,
 } from '../ui/drawer';
 import { ScrollArea } from '../ui/scroll-area';
-import { ReactNode, useState } from 'react';
+import { ReactNode, useEffect, useState } from 'react';
 import classNames from 'classnames';
 import { Market } from '@/types';
 import { useStore } from '@/store';
-
-// TODO: format price based on significant decimals
-// i.e. the precision for SHIB should be higher than ETH.
-//
-// NOTE: @valentin, I implemented something like this somewhere,
-// going to replase.
-function formatPrice(price: number): string {
-  return new Intl.NumberFormat().format(price);
-}
+import { formatPrice } from '@/lib/utils';
 
 interface Asset {
   key: string;
@@ -102,7 +94,7 @@ const assets = [
 ];
 
 const TriggerButton = () => {
-  const { marketsState } = useStore();
+  const { marketsState, setCurrentMarket } = useStore();
   const [selectedAsset, setSelectedAsset] = useState<{
     key: string;
     value: string;
@@ -118,6 +110,11 @@ const TriggerButton = () => {
   });
 
   const assetPrice = marketsState[chosenAsset.market]?.currentPrice;
+
+  // TODO: this is just a quick hack to update global store. See above.
+  useEffect(() => {
+    setCurrentMarket(chosenAsset.market);
+  }, [chosenAsset]);
 
   return (
     <div className="flex w-full h-16 justify-between px-4">
@@ -150,6 +147,7 @@ const TriggerButton = () => {
                 className="w-full"
                 size="lg"
                 variant="primary"
+                fontWeight="heavy"
                 onClick={() => selectedAsset && setChosenAsset(selectedAsset)}
               >
                 Confirm
@@ -159,7 +157,7 @@ const TriggerButton = () => {
         </DrawerContent>
       </Drawer>
       <div className="flex flex-col items-center justify-center">
-        <p className="text-lg">{assetPrice ? '$ ' + formatPrice(assetPrice) : '$ ...'}</p>
+        <p className="text-lg">{assetPrice ? formatPrice(assetPrice) : '$ ...'}</p>
         <p className="text-xxs underline">observe in graph</p>
       </div>
     </div>

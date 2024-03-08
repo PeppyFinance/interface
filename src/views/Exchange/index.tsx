@@ -6,21 +6,15 @@ import { Slider } from '@/components/ui/slider';
 import { InfoCircledIcon } from '@radix-ui/react-icons';
 import { useEffect, useMemo, useState } from 'react';
 import { useMaskito } from '@maskito/react';
-import { maskitoNumberOptionsGenerator } from '@maskito/kit';
 import { collateralTokenAddress, tradePairAddress } from '@/lib/addresses';
 import { useAccount, useReadContract, useWriteContract } from 'wagmi';
 import { erc20Abi, parseEther, formatEther } from 'viem';
 import { useNavigate } from 'react-router-dom';
 import * as tradePairAbi from '@/abi/TradePair.json';
-import { subscribeToPriceFeeds, unsubscribeToPriceFeeds } from '@/lib/pyth';
-
-const DollarMask = maskitoNumberOptionsGenerator({
-  precision: 0,
-  thousandSeparator: ',',
-  prefix: '$ ',
-  max: 1_000_000_000,
-  min: 0,
-});
+import { connection, subscribeToPriceFeeds, unsubscribeToPriceFeeds } from '@/lib/pyth';
+import { formatPrice } from '@/lib/utils';
+import { useStore } from '@/store';
+import { DollarMask } from '@/lib/masks';
 
 function parseCollateral(collateralString: string): bigint {
   return BigInt(collateralString.replaceAll('$', '').replaceAll(',', '').replaceAll(' ', ''));
@@ -31,6 +25,7 @@ function formatPositionSize(positionSize: bigint): string {
 }
 
 export const Exchange = () => {
+  const { marketsState, currentMarket } = useStore();
   const navigate = useNavigate();
   const { address, isConnected } = useAccount();
   const { error, failureReason, writeContract } = useWriteContract();
@@ -70,12 +65,12 @@ export const Exchange = () => {
 
   const hasEnoughBalance = useMemo(
     () => balance !== undefined && balance >= parsedCollateral,
-    [balance, collateral]
+    [balance, parsedCollateral]
   );
 
   const hasEnoughAllowance = useMemo(
     () => allowance !== undefined && allowance >= parsedCollateral,
-    [allowance, collateral]
+    [allowance, parsedCollateral]
   );
 
   const hasSufficientSize = useMemo(() => positionSize > 0n, [positionSize]);
@@ -92,23 +87,43 @@ export const Exchange = () => {
     [hasSufficientSize, hasEnoughBalance, hasEnoughAllowance]
   );
 
-  const handleOpenPosition = () => {
+  const currentMarketState = marketsState[currentMarket];
+
+  const handleOpenPosition = async () => {
+    if (!currentMarketState) {
+      return;
+    }
+
     if (!hasEnoughAllowance) {
       writeContract({
         address: collateralTokenAddress,
         abi: erc20Abi,
         functionName: 'approve',
-        args: [tradePairAddress, parseEther(collateral)],
+        args: [tradePairAddress, parsedCollateral],
       });
     } else {
+      const priceFeedUpdateData = await connection.getPriceFeedsUpdateData([
+        currentMarketState.priceFeedId,
+      ]);
+
       writeContract({
         address: tradePairAddress,
         abi: tradePairAbi.abi,
         functionName: 'openPosition',
         // TODO: place price data in here
-        args: [parseEther(collateral), leverage * 1_000_000, direction, []],
+        args: [parsedCollateral, leverage * 1_000_000, direction, priceFeedUpdateData],
       });
     }
+  };
+
+  const maxCollateral = useMemo(() => {
+    if (balance === undefined) return;
+    return '$ ' + Intl.NumberFormat().format(Number(balance / BigInt(1e18)));
+  }, [balance]);
+
+  const setMaxCollateral = () => {
+    if (maxCollateral === undefined) return;
+    setCollateral(maxCollateral);
   };
 
   useEffect(() => {
@@ -117,18 +132,13 @@ export const Exchange = () => {
     return unsubscribeToPriceFeeds;
   }, []);
 
+  useEffect(() => {
+    console.log(error);
+    console.log(failureReason);
+  }, [error, failureReason]);
+
   return (
-    <div className="px-3 py-2 h-full flex flex-col">
-      <div className="flex justify-between">
-        <div>
-          <h1 className="font-medium">Trading</h1>
-          <h2>Buy Position</h2>
-        </div>
-        <div className="space-x-2">
-          <a className="font-thin underline">History</a>
-          <a className="font-thin underline">Orders</a>
-        </div>
-      </div>
+    <div className="px-3 flex flex-col">
       <div className="pt-3">
         <AssetSelector />
       </div>
@@ -173,9 +183,17 @@ export const Exchange = () => {
           <p className="text-xxs pb-1">Venture Parameters</p>
         </div>
         <div>
-          <div className="flex mb-1">
-            <InfoCircledIcon className="mr-2" />
-            <p className="text-xs">Collateral in $USDC</p>
+          <div className="flex mb-1 justify-between">
+            <div className="flex">
+              <InfoCircledIcon className="mr-2" />
+              <p className="text-xs">Collateral in $USDC</p>
+            </div>
+            <div
+              className="underline underline-offset-2 decoration-dotted"
+              onClick={setMaxCollateral}
+            >
+              max: {maxCollateral || '--'}
+            </div>
           </div>
           <Input
             ref={maskedInputRef}
@@ -213,7 +231,7 @@ export const Exchange = () => {
             </div>
             <div className="flex justify-between">
               <p>Entry Price</p>
-              <p>$3,000</p>
+              <p>{currentMarketState ? formatPrice(currentMarketState.currentPrice) : '$...'}</p>
             </div>
             <div className="flex justify-between">
               <p>Liquidation Price</p>

@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { Market } from '../types.ts';
 
 interface MarketState {
+  priceFeedId: string;
   currentPrice: number;
   confidence: number;
   publishTime: Date;
@@ -11,6 +12,7 @@ interface AppState {
   currentMarket: Market;
   marketsState: Record<Market, MarketState | null>;
   setMarketState: (market: Market, marketState: MarketState) => void;
+  setCurrentMarket: (market: Market) => void;
 }
 
 export const useStore = create<AppState>()(set => ({
@@ -32,8 +34,8 @@ export const useStore = create<AppState>()(set => ({
         [market]: marketState,
       },
     })),
-  setCurrentMarket: (newMarket: Market) =>
+  setCurrentMarket: (market: Market) =>
     set(state => {
-      return { ...state, currentMarket: newMarket };
+      return { ...state, currentMarket: market };
     }),
 }));
