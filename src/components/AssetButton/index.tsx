@@ -23,14 +23,10 @@ import { ReactNode, useState } from 'react';
 import classNames from 'classnames';
 import { Market } from '@/types';
 import { useStore } from '@/store';
+import { formatDynamicPrecisionPrice } from '@/lib/utils';
 
-// TODO: format price based on significant decimals
-// i.e. the precision for SHIB should be higher than ETH.
-//
-// NOTE: @valentin, I implemented something like this somewhere,
-// going to replase.
 function formatPrice(price: number): string {
-  return new Intl.NumberFormat().format(price);
+  return formatDynamicPrecisionPrice(price);
 }
 
 interface Asset {
