@@ -7,3 +7,11 @@ export const DollarMask = maskitoNumberOptionsGenerator({
   max: 1_000_000_000,
   min: 0,
 });
+
+export const LpMask = maskitoNumberOptionsGenerator({
+  precision: 0,
+  thousandSeparator: ',',
+  postfix: ' PLP',
+  max: 1_000_000_000,
+  min: 0,
+});

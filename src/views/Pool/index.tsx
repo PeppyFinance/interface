@@ -9,31 +9,36 @@ import {
   DrawerFooter,
   DrawerHeader,
   DrawerTitle,
-  DrawerTrigger,
 } from '@/components/ui/drawer';
 import { Input } from '@/components/ui/input';
 import { useMaskito } from '@maskito/react';
-import { DollarMask } from '@/lib/masks';
+import { DollarMask, LpMask } from '@/lib/masks';
 import { useEffect, useMemo, useState } from 'react';
 import { InfoCircledIcon } from '@radix-ui/react-icons';
 import { erc20Abi } from 'viem';
 import { useNavigate } from 'react-router-dom';
 
-function parseDeposit(collateralString: string): bigint {
-  return (
-    BigInt(collateralString.replaceAll('$', '').replaceAll(',', '').replaceAll(' ', '')) *
-    BigInt(1e18)
-  );
+function parseUsdString(str: string): bigint {
+  return BigInt(str.replaceAll('$', '').replaceAll(',', '').replaceAll(' ', '')) * BigInt(1e18);
+}
+
+function parseLpString(str: string): bigint {
+  return BigInt(str.replaceAll('PLP', '').replaceAll(',', '').replaceAll(' ', '')) * BigInt(1e18);
 }
 
 export const Pool = () => {
   const navigate = useNavigate();
   const { address, isConnected } = useAccount();
-  const [deposit, setDeposit] = useState<string>('$ 0');
+  const [depositAmount, setDepositAmount] = useState<string>('$ 0');
+  const [redemptionAmount, setRedemptionAmount] = useState<string>('0 PLP');
   const [isDepositDrawerOpen, setDepositDrawerOpen] = useState<boolean>(false);
+  const [isRedeemDrawerOpen, setRedeemDrawerOpen] = useState<boolean>(false);
   const { writeContract: writeContractDeposit, status: statusDeposit } = useWriteContract();
+  const { writeContract: writeContractRedeem, status: statusRedeem } = useWriteContract();
   const { writeContract: writeContractAllowance, status: statusAllowance } = useWriteContract();
-  const maskedInputRef = useMaskito({ options: DollarMask });
+
+  const dollarMaskedInputRef = useMaskito({ options: DollarMask });
+  const lpMaskedInputRef = useMaskito({ options: LpMask });
 
   // TODO: should probably allow reading pool stats
   if (address === undefined || !isConnected) {
@@ -41,7 +46,8 @@ export const Pool = () => {
     return;
   }
 
-  const parsedDeposit = useMemo(() => parseDeposit(deposit), [deposit]);
+  const parsedDepositAmount = useMemo(() => parseUsdString(depositAmount), [depositAmount]);
+  const parsedRedemptionAmount = useMemo(() => parseLpString(redemptionAmount), [redemptionAmount]);
 
   const { data: totalAssets, refetch: refetchTotalAssets } = useReadContract({
     address: liquidityPoolAddress,
@@ -63,11 +69,19 @@ export const Pool = () => {
   });
 
   // TODO: this should be throttled, e.g. via debounce
-  const { data: previewedAmountShares } = useReadContract({
+  const { data: previewedAmountOnDeposit } = useReadContract({
     address: liquidityPoolAddress,
     abi: LiquidityPoolAbi,
     functionName: 'previewDeposit',
-    args: [parsedDeposit],
+    args: [parsedDepositAmount],
+  });
+
+  // TODO: this should be throttled, e.g. via debounce
+  const { data: previewedAmountOnRedeem } = useReadContract({
+    address: liquidityPoolAddress,
+    abi: LiquidityPoolAbi,
+    functionName: 'previewRedeem',
+    args: [parsedRedemptionAmount],
   });
 
   const { data: balance, refetch: refetchBalance } = useReadContract({
@@ -84,26 +98,46 @@ export const Pool = () => {
     args: [address, liquidityPoolAddress],
   });
 
-  const maxDeposit = useMemo(() => {
+  const maxDepositAmount = useMemo(() => {
     if (balance === undefined) return;
     return '$ ' + Intl.NumberFormat().format(Number(balance / BigInt(1e18)));
   }, [balance]);
 
-  const setMaxDeposit = () => {
-    if (maxDeposit === undefined) return;
-    setDeposit(maxDeposit);
+  const setMaxDepositAmount = () => {
+    if (maxDepositAmount === undefined) return;
+    setDepositAmount(maxDepositAmount);
   };
 
-  const hasSufficientDeposit = useMemo(() => parsedDeposit > 0n, [parsedDeposit]);
+  const maxRedemptionAmount = useMemo(() => {
+    if (ownedShares === undefined) return;
+    return Intl.NumberFormat().format(Number(ownedShares / BigInt(1e18))) + ' PLP';
+  }, [ownedShares]);
+
+  const setMaxRedemptionAmount = () => {
+    if (maxRedemptionAmount === undefined) return;
+    setRedemptionAmount(maxRedemptionAmount);
+  };
+
+  const hasSufficientDepositAmount = useMemo(() => parsedDepositAmount > 0n, [parsedDepositAmount]);
+
+  const hasSufficientRedemptionAmount = useMemo(
+    () => parsedRedemptionAmount > 0n,
+    [parsedRedemptionAmount]
+  );
 
   const hasSufficientAllowance = useMemo(
-    () => allowance !== undefined && allowance >= parsedDeposit,
-    [allowance, parsedDeposit]
+    () => allowance !== undefined && allowance >= parsedDepositAmount,
+    [allowance, parsedDepositAmount]
   );
 
   const hasSufficientBalance = useMemo(
-    () => balance !== undefined && balance >= parsedDeposit,
-    [balance, parsedDeposit]
+    () => balance !== undefined && balance >= parsedDepositAmount,
+    [balance, parsedDepositAmount]
+  );
+
+  const hasSufficientShares = useMemo(
+    () => ownedShares !== undefined && ownedShares >= parsedRedemptionAmount,
+    [ownedShares, parsedRedemptionAmount]
   );
 
   const depositButtonText = useMemo(
@@ -112,14 +146,24 @@ export const Pool = () => {
         ? 'Not enough funds'
         : !hasSufficientAllowance
           ? 'Approve'
-          : !hasSufficientDeposit
+          : !hasSufficientDepositAmount
             ? 'Insufficient Amount'
             : 'Deposit',
-    [hasSufficientBalance, hasSufficientAllowance, hasSufficientDeposit]
+    [hasSufficientBalance, hasSufficientAllowance, hasSufficientDepositAmount]
   );
 
-  const deployDeposit = async () => {
-    if (!hasSufficientDeposit) {
+  const redeemButtonText = useMemo(
+    () =>
+      !hasSufficientShares
+        ? 'Not enough shares'
+        : !hasSufficientRedemptionAmount
+          ? 'Insufficient Amount'
+          : 'Redeem',
+    [hasSufficientShares, hasSufficientRedemptionAmount]
+  );
+
+  const deposit = () => {
+    if (!hasSufficientDepositAmount) {
       return;
     }
 
@@ -128,16 +172,29 @@ export const Pool = () => {
         address: collateralTokenAddress,
         abi: erc20Abi,
         functionName: 'approve',
-        args: [liquidityPoolAddress, parsedDeposit],
+        args: [liquidityPoolAddress, parsedDepositAmount],
       });
     } else {
       writeContractDeposit({
         address: liquidityPoolAddress,
         abi: LiquidityPoolAbi,
         functionName: 'deposit',
-        args: [parseDeposit(deposit)],
+        args: [parsedDepositAmount],
       });
     }
+  };
+
+  const redeem = () => {
+    if (!hasSufficientRedemptionAmount) {
+      return;
+    }
+
+    writeContractRedeem({
+      address: liquidityPoolAddress,
+      abi: LiquidityPoolAbi,
+      functionName: 'redeem',
+      args: [parsedRedemptionAmount],
+    });
   };
 
   useEffect(() => {
@@ -148,9 +205,21 @@ export const Pool = () => {
       refetchAllowance();
       refetchOwnedShares();
       refetchTotalShares();
-      setDeposit('$ 0');
+      setDepositAmount('$ 0');
     }
   }, [statusDeposit]);
+
+  useEffect(() => {
+    if (statusRedeem === 'success') {
+      setRedeemDrawerOpen(false);
+      refetchTotalAssets();
+      refetchBalance();
+      refetchAllowance();
+      refetchOwnedShares();
+      refetchTotalShares();
+      setRedemptionAmount('0 PLP');
+    }
+  }, [statusRedeem]);
 
   useEffect(() => {
     if (statusAllowance === 'success') {
@@ -169,7 +238,11 @@ export const Pool = () => {
             <div>
               <div className="flex justify-between">
                 <p>Total Liquidity:</p>
-                <p>{totalAssets ? '$' + (totalAssets / BigInt(1e18)).toLocaleString() : '-'}</p>
+                <p>
+                  {totalAssets !== undefined
+                    ? '$' + (totalAssets / BigInt(1e18)).toLocaleString()
+                    : '-'}
+                </p>
               </div>
               <div className="flex justify-between">
                 <p>Owned Liquidity:</p>
@@ -179,11 +252,17 @@ export const Pool = () => {
             <div>
               <div className="flex justify-between">
                 <p>Total LP Shares:</p>
-                <p>{totalShares ? (totalShares / BigInt(1e18)).toLocaleString() : '-'} PLP</p>
+                <p>
+                  {totalShares !== undefined ? (totalShares / BigInt(1e18)).toLocaleString() : '-'}{' '}
+                  PLP
+                </p>
               </div>
               <div className="flex justify-between">
                 <p>Owned LP Shares:</p>
-                <p>{ownedShares ? (ownedShares / BigInt(1e18)).toLocaleString() : '-'} PLP</p>
+                <p>
+                  {ownedShares !== undefined ? (ownedShares / BigInt(1e18)).toLocaleString() : '-'}{' '}
+                  PLP
+                </p>
               </div>
             </div>
             <div>
@@ -196,8 +275,7 @@ export const Pool = () => {
         </CardContent>
         <CardFooter>
           <div className="w-full flex space-x-3">
-            {/* TODO: drawer does not close when clicking away */}
-            <Drawer open={isDepositDrawerOpen}>
+            <Drawer open={isDepositDrawerOpen} onOpenChange={open => setDepositDrawerOpen(open)}>
               <Button
                 variant="default"
                 size="default"
@@ -219,22 +297,22 @@ export const Pool = () => {
                     </div>
                     <div
                       className="underline underline-offset-2 decoration-dotted"
-                      onClick={setMaxDeposit}
+                      onClick={setMaxDepositAmount}
                     >
-                      max: {maxDeposit || '--'}
+                      max: {maxDepositAmount || '--'}
                     </div>
                   </div>
                   <Input
-                    ref={maskedInputRef}
+                    ref={dollarMaskedInputRef}
                     className="font-bold"
-                    value={deposit}
-                    onInput={e => setDeposit(e.currentTarget.value)}
+                    value={depositAmount}
+                    onInput={e => setDepositAmount(e.currentTarget.value)}
                   />
                   <div className="flex justify-between mt-6">
                     <p>Estimated Shares:</p>
                     <p>
-                      {previewedAmountShares !== undefined
-                        ? Number(previewedAmountShares / BigInt(1e18)).toLocaleString()
+                      {previewedAmountOnDeposit !== undefined
+                        ? Number(previewedAmountOnDeposit / BigInt(1e18)).toLocaleString()
                         : '--'}{' '}
                       PLP
                     </p>
@@ -245,21 +323,69 @@ export const Pool = () => {
                     variant="primary"
                     size="lg"
                     fontWeight="heavy"
-                    disabled={!hasSufficientDeposit || !hasSufficientBalance}
-                    onClick={deployDeposit}
+                    disabled={!hasSufficientDepositAmount || !hasSufficientBalance}
+                    onClick={deposit}
                   >
                     {depositButtonText}
                   </Button>
                 </DrawerFooter>
               </DrawerContent>
             </Drawer>
-            <Drawer>
-              <DrawerTrigger>
-                <Button variant="default" size="default" fontWeight="heavy" fontSize="sm">
-                  Withdraw
-                </Button>
-              </DrawerTrigger>
-              <DrawerContent className="h-[70%]"></DrawerContent>
+            <Drawer open={isRedeemDrawerOpen} onOpenChange={open => setRedeemDrawerOpen(open)}>
+              <Button
+                variant="default"
+                size="default"
+                fontWeight="heavy"
+                fontSize="sm"
+                onClick={() => setRedeemDrawerOpen(true)}
+              >
+                Withdraw
+              </Button>
+              <DrawerContent className="h-[70%]">
+                <DrawerHeader>
+                  <DrawerTitle>Redeem Shares</DrawerTitle>
+                </DrawerHeader>
+                <div className="p-4">
+                  <div className="flex mb-1 justify-between">
+                    <div className="flex">
+                      <InfoCircledIcon className="mr-2" />
+                      <p className="text-xs">Redeem as $USDC</p>
+                    </div>
+                    <div
+                      className="underline underline-offset-2 decoration-dotted"
+                      onClick={setMaxRedemptionAmount}
+                    >
+                      max: {maxRedemptionAmount || '--'}
+                    </div>
+                  </div>
+                  <Input
+                    ref={lpMaskedInputRef}
+                    className="font-bold"
+                    value={redemptionAmount}
+                    onInput={e => setRedemptionAmount(e.currentTarget.value)}
+                  />
+                  <div className="flex justify-between mt-6">
+                    <p>Estimated Amount:</p>
+                    <p>
+                      ${' '}
+                      {previewedAmountOnRedeem !== undefined
+                        ? Number(previewedAmountOnRedeem / BigInt(1e18)).toLocaleString()
+                        : '--'}
+                    </p>
+                  </div>
+                </div>
+                <DrawerFooter>
+                  <Button
+                    variant="primary"
+                    size="lg"
+                    fontWeight="heavy"
+                    disabled={!hasSufficientRedemptionAmount || !hasSufficientShares}
+                    onClick={redeem}
+                  >
+                    {redeemButtonText}
+                  </Button>
+                </DrawerFooter>
+              </DrawerContent>
             </Drawer>
           </div>
         </CardFooter>
