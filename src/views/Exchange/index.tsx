@@ -192,7 +192,7 @@ export const Exchange = () => {
               className="underline underline-offset-2 decoration-dotted"
               onClick={setMaxCollateral}
             >
-              max: {maxCollateral}
+              max: {maxCollateral || '--'}
             </div>
           </div>
           <Input

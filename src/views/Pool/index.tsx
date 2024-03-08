@@ -29,7 +29,7 @@ function parseDeposit(collateralString: string): bigint {
 export const Pool = () => {
   const navigate = useNavigate();
   const { address, isConnected } = useAccount();
-  const [deposit, setDeposit] = useState('$ 0');
+  const [deposit, setDeposit] = useState<string>('$ 0');
   const [isDepositDrawerOpen, setDepositDrawerOpen] = useState<boolean>(false);
   const { writeContract: writeContractDeposit, status: statusDeposit } = useWriteContract();
   const { writeContract: writeContractAllowance, status: statusAllowance } = useWriteContract();
@@ -47,6 +47,19 @@ export const Pool = () => {
     address: liquidityPoolAddress,
     abi: LiquidityPoolAbi,
     functionName: 'totalAssets',
+  });
+
+  const { data: totalShares, refetch: refetchTotalShares } = useReadContract({
+    address: liquidityPoolAddress,
+    abi: LiquidityPoolAbi,
+    functionName: 'totalSupply',
+  });
+
+  const { data: ownedShares, refetch: refetchOwnedShares } = useReadContract({
+    address: liquidityPoolAddress,
+    abi: LiquidityPoolAbi,
+    functionName: 'balanceOf',
+    args: [address],
   });
 
   // TODO: this should be throttled, e.g. via debounce
@@ -133,6 +146,9 @@ export const Pool = () => {
       refetchTotalAssets();
       refetchBalance();
       refetchAllowance();
+      refetchOwnedShares();
+      refetchTotalShares();
+      setDeposit('$ 0');
     }
   }, [statusDeposit]);
 
@@ -152,22 +168,22 @@ export const Pool = () => {
           <div className="space-y-4">
             <div>
               <div className="flex justify-between">
-                <p>Total Assets:</p>
-                <p>{totalAssets?.toString()}</p>
+                <p>Total Liquidity:</p>
+                <p>{totalAssets ? '$' + (totalAssets / BigInt(1e18)).toLocaleString() : '-'}</p>
               </div>
               <div className="flex justify-between">
-                <p>Owned Assets:</p>
-                <p>{totalAssets?.toString()}</p>
+                <p>Owned Liquidity:</p>
+                <p>???</p>
               </div>
             </div>
             <div>
               <div className="flex justify-between">
                 <p>Total LP Shares:</p>
-                <p>{totalAssets?.toString()}</p>
+                <p>{totalShares ? (totalShares / BigInt(1e18)).toLocaleString() : '-'} PLP</p>
               </div>
               <div className="flex justify-between">
                 <p>Owned LP Shares:</p>
-                <p>{totalAssets?.toString()}</p>
+                <p>{ownedShares ? (ownedShares / BigInt(1e18)).toLocaleString() : '-'} PLP</p>
               </div>
             </div>
             <div>
@@ -205,7 +221,7 @@ export const Pool = () => {
                       className="underline underline-offset-2 decoration-dotted"
                       onClick={setMaxDeposit}
                     >
-                      max: {maxDeposit}
+                      max: {maxDeposit || '--'}
                     </div>
                   </div>
                   <Input
