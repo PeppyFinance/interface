@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { Market } from '../types.ts';
 
 interface MarketState {
+  priceFeedId: string;
   currentPrice: number;
   confidence: number;
   publishTime: Date;

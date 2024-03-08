@@ -10,11 +10,12 @@ import { maskitoNumberOptionsGenerator } from '@maskito/kit';
 import { collateralTokenAddress, tradePairAddress } from '@/lib/addresses';
 import { useAccount, useReadContract, useWriteContract } from 'wagmi';
 import { erc20Abi, parseEther, formatEther } from 'viem';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import * as tradePairAbi from '@/abi/TradePair.json';
-import { subscribeToPriceFeeds, unsubscribeToPriceFeeds } from '@/lib/pyth';
+import { connection, subscribeToPriceFeeds, unsubscribeToPriceFeeds } from '@/lib/pyth';
 import { formatPrice } from '@/lib/utils';
 import { useStore } from '@/store';
+import { PositionList } from '@/components/PositionList';
 
 const DollarMask = maskitoNumberOptionsGenerator({
   precision: 0,
@@ -95,21 +96,31 @@ export const Exchange = () => {
     [hasSufficientSize, hasEnoughBalance, hasEnoughAllowance]
   );
 
-  const handleOpenPosition = () => {
+  const currentMarketState = marketsState[currentMarket];
+
+  const handleOpenPosition = async () => {
+    if (!currentMarketState) {
+      return;
+    }
+
     if (!hasEnoughAllowance) {
       writeContract({
         address: collateralTokenAddress,
         abi: erc20Abi,
         functionName: 'approve',
-        args: [tradePairAddress, parseEther(collateral)],
+        args: [tradePairAddress, parsedCollateral],
       });
     } else {
+      const priceFeedUpdateData = await connection.getPriceFeedsUpdateData([
+        currentMarketState.priceFeedId,
+      ]);
+
       writeContract({
         address: tradePairAddress,
         abi: tradePairAbi.abi,
         functionName: 'openPosition',
         // TODO: place price data in here
-        args: [parseEther(collateral), leverage * 1_000_000, direction, []],
+        args: [parsedCollateral, leverage * 1_000_000, direction, priceFeedUpdateData],
       });
     }
   };
@@ -120,20 +131,13 @@ export const Exchange = () => {
     return unsubscribeToPriceFeeds;
   }, []);
 
-  const currentMarketState = marketsState[currentMarket];
+  useEffect(() => {
+    console.log(error);
+    console.log(failureReason);
+  }, [error, failureReason]);
 
   return (
-    <div className="px-3 py-2 h-full flex flex-col">
-      <div className="flex justify-between">
-        <div>
-          <h1 className="font-medium">Trading</h1>
-          <h2>Buy Position</h2>
-        </div>
-        <div className="space-x-2">
-          <a className="font-thin underline">History</a>
-          <a className="font-thin underline">Orders</a>
-        </div>
-      </div>
+    <div className="px-3 h-full flex flex-col">
       <div className="pt-3">
         <AssetSelector />
       </div>
