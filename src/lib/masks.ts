@@ -1,0 +1,9 @@
+import { maskitoNumberOptionsGenerator } from '@maskito/kit';
+
+export const DollarMask = maskitoNumberOptionsGenerator({
+  precision: 0,
+  thousandSeparator: ',',
+  prefix: '$ ',
+  max: 1_000_000_000,
+  min: 0,
+});

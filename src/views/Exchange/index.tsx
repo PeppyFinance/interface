@@ -6,24 +6,15 @@ import { Slider } from '@/components/ui/slider';
 import { InfoCircledIcon } from '@radix-ui/react-icons';
 import { useEffect, useMemo, useState } from 'react';
 import { useMaskito } from '@maskito/react';
-import { maskitoNumberOptionsGenerator } from '@maskito/kit';
 import { collateralTokenAddress, tradePairAddress } from '@/lib/addresses';
 import { useAccount, useReadContract, useWriteContract } from 'wagmi';
 import { erc20Abi, parseEther, formatEther } from 'viem';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import * as tradePairAbi from '@/abi/TradePair.json';
 import { connection, subscribeToPriceFeeds, unsubscribeToPriceFeeds } from '@/lib/pyth';
 import { formatPrice } from '@/lib/utils';
 import { useStore } from '@/store';
-import { PositionList } from '@/components/PositionList';
-
-const DollarMask = maskitoNumberOptionsGenerator({
-  precision: 0,
-  thousandSeparator: ',',
-  prefix: '$ ',
-  max: 1_000_000_000,
-  min: 0,
-});
+import { DollarMask } from '@/lib/masks';
 
 function parseCollateral(collateralString: string): bigint {
   return BigInt(collateralString.replaceAll('$', '').replaceAll(',', '').replaceAll(' ', ''));
@@ -74,12 +65,12 @@ export const Exchange = () => {
 
   const hasEnoughBalance = useMemo(
     () => balance !== undefined && balance >= parsedCollateral,
-    [balance, collateral]
+    [balance, parsedCollateral]
   );
 
   const hasEnoughAllowance = useMemo(
     () => allowance !== undefined && allowance >= parsedCollateral,
-    [allowance, collateral]
+    [allowance, parsedCollateral]
   );
 
   const hasSufficientSize = useMemo(() => positionSize > 0n, [positionSize]);
@@ -125,6 +116,16 @@ export const Exchange = () => {
     }
   };
 
+  const maxCollateral = useMemo(() => {
+    if (balance === undefined) return;
+    return '$ ' + Intl.NumberFormat().format(Number(balance / BigInt(1e18)));
+  }, [balance]);
+
+  const setMaxCollateral = () => {
+    if (maxCollateral === undefined) return;
+    setCollateral(maxCollateral);
+  };
+
   useEffect(() => {
     subscribeToPriceFeeds();
     // NOTE: clean up on unmount
@@ -137,7 +138,7 @@ export const Exchange = () => {
   }, [error, failureReason]);
 
   return (
-    <div className="px-3 h-full flex flex-col">
+    <div className="px-3 flex flex-col">
       <div className="pt-3">
         <AssetSelector />
       </div>
@@ -182,9 +183,17 @@ export const Exchange = () => {
           <p className="text-xxs pb-1">Venture Parameters</p>
         </div>
         <div>
-          <div className="flex mb-1">
-            <InfoCircledIcon className="mr-2" />
-            <p className="text-xs">Collateral in $USDC</p>
+          <div className="flex mb-1 justify-between">
+            <div className="flex">
+              <InfoCircledIcon className="mr-2" />
+              <p className="text-xs">Collateral in $USDC</p>
+            </div>
+            <div
+              className="underline underline-offset-2 decoration-dotted"
+              onClick={setMaxCollateral}
+            >
+              max: {maxCollateral}
+            </div>
           </div>
           <Input
             ref={maskedInputRef}

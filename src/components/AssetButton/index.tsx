@@ -147,6 +147,7 @@ const TriggerButton = () => {
                 className="w-full"
                 size="lg"
                 variant="primary"
+                fontWeight="heavy"
                 onClick={() => selectedAsset && setChosenAsset(selectedAsset)}
               >
                 Confirm
