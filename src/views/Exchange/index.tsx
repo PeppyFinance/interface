@@ -28,7 +28,9 @@ export const Exchange = () => {
   const { marketsState, currentMarket } = useStore();
   const navigate = useNavigate();
   const { address, isConnected } = useAccount();
-  const { error, failureReason, writeContract } = useWriteContract();
+  const { writeContract: writeContractOpenPosition, status: statusOpenPosition } =
+    useWriteContract();
+  const { writeContract: writeContractApprove, status: statusApprove } = useWriteContract();
   const maskedInputRef = useMaskito({ options: DollarMask });
 
   if (address === undefined || !isConnected) {
@@ -49,14 +51,14 @@ export const Exchange = () => {
     [parsedCollateral, leverage]
   );
 
-  const { data: balance } = useReadContract({
+  const { data: balance, refetch: refetchBalance } = useReadContract({
     address: collateralTokenAddress,
     abi: erc20Abi,
     functionName: 'balanceOf',
     args: [address],
   });
 
-  const { data: allowance } = useReadContract({
+  const { data: allowance, refetch: refetchAllowance } = useReadContract({
     address: collateralTokenAddress,
     abi: erc20Abi,
     functionName: 'allowance',
@@ -95,7 +97,7 @@ export const Exchange = () => {
     }
 
     if (!hasEnoughAllowance) {
-      writeContract({
+      writeContractApprove({
         address: collateralTokenAddress,
         abi: erc20Abi,
         functionName: 'approve',
@@ -106,7 +108,7 @@ export const Exchange = () => {
         currentMarketState.priceFeedId,
       ]);
 
-      writeContract({
+      writeContractOpenPosition({
         address: tradePairAddress,
         abi: tradePairAbi.abi,
         functionName: 'openPosition',
@@ -133,9 +135,17 @@ export const Exchange = () => {
   }, []);
 
   useEffect(() => {
-    console.log(error);
-    console.log(failureReason);
-  }, [error, failureReason]);
+    if (statusOpenPosition === 'success') {
+      refetchBalance();
+      refetchAllowance();
+    }
+  }, [statusOpenPosition]);
+
+  useEffect(() => {
+    if (statusApprove === 'success') {
+      refetchAllowance();
+    }
+  }, [statusApprove]);
 
   return (
     <div className="px-3 flex flex-col">
