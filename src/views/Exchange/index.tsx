@@ -13,6 +13,8 @@ import { erc20Abi, parseEther, formatEther } from 'viem';
 import { useNavigate } from 'react-router-dom';
 import * as tradePairAbi from '@/abi/TradePair.json';
 import { subscribeToPriceFeeds, unsubscribeToPriceFeeds } from '@/lib/pyth';
+import { formatPrice } from '@/lib/utils';
+import { useStore } from '@/store';
 
 const DollarMask = maskitoNumberOptionsGenerator({
   precision: 0,
@@ -31,6 +33,7 @@ function formatPositionSize(positionSize: bigint): string {
 }
 
 export const Exchange = () => {
+  const { marketsState, currentMarket } = useStore();
   const navigate = useNavigate();
   const { address, isConnected } = useAccount();
   const { error, failureReason, writeContract } = useWriteContract();
@@ -116,6 +119,8 @@ export const Exchange = () => {
     // NOTE: clean up on unmount
     return unsubscribeToPriceFeeds;
   }, []);
+
+  const currentMarketState = marketsState[currentMarket];
 
   return (
     <div className="px-3 py-2 h-full flex flex-col">
@@ -213,7 +218,7 @@ export const Exchange = () => {
             </div>
             <div className="flex justify-between">
               <p>Entry Price</p>
-              <p>$3,000</p>
+              <p>{currentMarketState ? formatPrice(currentMarketState.currentPrice) : '$...'}</p>
             </div>
             <div className="flex justify-between">
               <p>Liquidation Price</p>

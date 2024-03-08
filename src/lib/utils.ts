@@ -27,3 +27,12 @@ export function formatDynamicPrecisionPrice(price: number): string {
     return price.toFixed(decimalPlaces);
   }
 }
+
+export function formatPrice(price: number): string {
+  return Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 99,
+  }).format(Number(formatDynamicPrecisionPrice(price)));
+}

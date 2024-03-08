@@ -19,15 +19,11 @@ import {
   DrawerTrigger,
 } from '../ui/drawer';
 import { ScrollArea } from '../ui/scroll-area';
-import { ReactNode, useState } from 'react';
+import { ReactNode, useEffect, useState } from 'react';
 import classNames from 'classnames';
 import { Market } from '@/types';
 import { useStore } from '@/store';
-import { formatDynamicPrecisionPrice } from '@/lib/utils';
-
-function formatPrice(price: number): string {
-  return formatDynamicPrecisionPrice(price);
-}
+import { formatPrice } from '@/lib/utils';
 
 interface Asset {
   key: string;
@@ -98,7 +94,7 @@ const assets = [
 ];
 
 const TriggerButton = () => {
-  const { marketsState } = useStore();
+  const { marketsState, setCurrentMarket } = useStore();
   const [selectedAsset, setSelectedAsset] = useState<{
     key: string;
     value: string;
@@ -114,6 +110,11 @@ const TriggerButton = () => {
   });
 
   const assetPrice = marketsState[chosenAsset.market]?.currentPrice;
+
+  // TODO: this is just a quick hack to update global store. See above.
+  useEffect(() => {
+    setCurrentMarket(chosenAsset.market);
+  }, [chosenAsset]);
 
   return (
     <div className="flex w-full h-16 justify-between px-4">
@@ -155,7 +156,7 @@ const TriggerButton = () => {
         </DrawerContent>
       </Drawer>
       <div className="flex flex-col items-center justify-center">
-        <p className="text-lg">{assetPrice ? '$ ' + formatPrice(assetPrice) : '$ ...'}</p>
+        <p className="text-lg">{assetPrice ? formatPrice(assetPrice) : '$ ...'}</p>
         <p className="text-xxs underline">observe in graph</p>
       </div>
     </div>
