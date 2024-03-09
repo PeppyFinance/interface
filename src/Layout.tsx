@@ -45,7 +45,7 @@ export const Layout = () => {
   }, [location]);
 
   return (
-    <div className="tracking-widest h-full bg-[url('/background.png')] bg-center bg-cover">
+    <div className="tracking-widest h-full bg-[url('/background.png')] bg-center bg-cover relative">
       <Header title={title} subtitle={subtitle} />
       <Outlet />
     </div>
