@@ -13,7 +13,7 @@ import { useNavigate } from 'react-router-dom';
 import * as tradePairAbi from '@/abi/TradePair.json';
 import { connection, subscribeToPriceFeeds, unsubscribeToPriceFeeds } from '@/lib/pyth';
 import { formatPrice } from '@/lib/utils';
-import { useStore } from '@/store';
+import { useMarketStore } from '@/store';
 import { DollarMask } from '@/lib/masks';
 
 function parseCollateral(collateralString: string): bigint {
@@ -25,7 +25,7 @@ function formatPositionSize(positionSize: bigint): string {
 }
 
 export const Exchange = () => {
-  const { marketsState, currentMarket } = useStore();
+  const { marketsState, currentMarket } = useMarketStore();
   const navigate = useNavigate();
   const { address, isConnected } = useAccount();
   const { error, failureReason, writeContract } = useWriteContract();

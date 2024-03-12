@@ -3,14 +3,14 @@ import { encodeAbiParameters, formatEther } from 'viem';
 import * as tradePairAbi from '@/abi/TradePair.json';
 import { useBlock, useWriteContract } from 'wagmi';
 import { useEffect } from 'react';
-import { useStore } from '@/store';
+import { useMarketStore } from '@/store';
 
 export function OpenPosition(props) {
   const { error, failureReason, writeContract } = useWriteContract();
 
   const block = useBlock();
 
-  const { marketsState, currentMarket } = useStore();
+  const { marketsState, currentMarket } = useMarketStore();
 
   const currentMarketState = marketsState[currentMarket];
 

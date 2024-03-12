@@ -22,7 +22,7 @@ import { ScrollArea } from '../ui/scroll-area';
 import { ReactNode, useEffect, useState } from 'react';
 import classNames from 'classnames';
 import { Market } from '@/types';
-import { useStore } from '@/store';
+import { useMarketStore } from '@/store';
 import { formatPrice } from '@/lib/utils';
 
 interface Asset {
@@ -94,7 +94,7 @@ const assets = [
 ];
 
 const TriggerButton = () => {
-  const { marketsState, setCurrentMarket } = useStore();
+  const { marketsState, setCurrentMarket } = useMarketStore();
   const [selectedAsset, setSelectedAsset] = useState<{
     key: string;
     value: string;

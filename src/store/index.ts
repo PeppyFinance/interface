@@ -17,7 +17,7 @@ interface AppState {
   setCurrentMarket: (market: Market) => void;
 }
 
-export const useStore = create<AppState>()(set => ({
+export const useMarketStore = create<AppState>()(set => ({
   currentMarket: Market.IOTAUSD,
   marketsState: {
     IOTAUSD: null,
