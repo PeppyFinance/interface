@@ -24,6 +24,8 @@ function storePrice(priceFeed: PriceFeed) {
     currentPrice: price,
     confidence: Number(priceStruct.conf),
     publishTime: new Date(priceStruct.publishTime),
+    price: priceStruct.price,
+    expo: priceStruct.expo,
   });
 }
 

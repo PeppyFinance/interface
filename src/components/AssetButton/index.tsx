@@ -57,6 +57,11 @@ const Asset = (props: AssetProps) => {
 
 const assets = [
   {
+    key: 'iota',
+    value: 'IOTA',
+    market: Market.IOTAUSD,
+  },
+  {
     key: 'eth',
     value: 'ETH',
     market: Market.ETHUSD,
@@ -70,11 +75,6 @@ const assets = [
     key: 'ltc',
     value: 'LTC',
     market: Market.LTCUSD,
-  },
-  {
-    key: 'iota',
-    value: 'IOTA',
-    market: Market.IOTAUSD,
   },
   {
     key: 'avax',
@@ -104,9 +104,9 @@ const TriggerButton = () => {
   // TODO: this should be dispatched to the global store, so other
   // components can consume the current price of current asset.
   const [chosenAsset, setChosenAsset] = useState<{ key: string; value: string; market: Market }>({
-    key: 'eth',
-    value: 'ETH',
-    market: Market.ETHUSD,
+    key: 'iota',
+    value: 'IOTA',
+    market: Market.IOTAUSD,
   });
 
   const assetPrice = marketsState[chosenAsset.market]?.currentPrice;
