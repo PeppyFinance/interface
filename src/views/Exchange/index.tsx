@@ -11,7 +11,6 @@ import { useAccount, useReadContract, useWriteContract, useBlock } from 'wagmi';
 import { erc20Abi, parseEther, formatEther, encodeAbiParameters, getAbiItem } from 'viem';
 import { useNavigate } from 'react-router-dom';
 import * as tradePairAbi from '@/abi/TradePair.json';
-import * as mockPriceFeedAbi from '@/abi/MockPriceFeed.json';
 import { connection, subscribeToPriceFeeds, unsubscribeToPriceFeeds } from '@/lib/pyth';
 import { formatPrice } from '@/lib/utils';
 import { useStore } from '@/store';
