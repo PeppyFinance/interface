@@ -13,7 +13,8 @@ import { TypedDocumentNode as DocumentNode } from '@graphql-typed-document-node/
  * Therefore it is highly recommended to use the babel or swc plugin for production.
  */
 const documents = {
-    "\n  subscription getPositions($owner: String!) {\n    Position(where: { owner: { address: { _eq: $owner } } }) {\n      collateral\n      assets\n      direction\n      entryTimestamp\n      id\n    }\n  }\n": types.GetPositionsDocument,
+    "\n  subscription UserPositions($owner: String!) {\n    Position(where: { owner_id: { _eq: $owner }, isOpen: { _eq: false } }) {\n      collateral\n      direction\n      entryVolume\n      entryPrice\n      entryTimestamp\n      closePrice\n      totalPnL\n      pnl\n      borrowFeeAmount\n      fundingFeeAmount\n      id\n    }\n  }\n": types.UserPositionsDocument,
+    "\n  subscription getPositions($owner: String!) {\n    Position(where: { owner: { address: { _eq: $owner } }, isOpen: { _eq: true } }) {\n      collateral\n      assets\n      direction\n      entryVolume\n      entryPrice\n      entryTimestamp\n      id\n    }\n  }\n": types.GetPositionsDocument,
 };
 
 /**
@@ -33,7 +34,11 @@ export function graphql(source: string): unknown;
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "\n  subscription getPositions($owner: String!) {\n    Position(where: { owner: { address: { _eq: $owner } } }) {\n      collateral\n      assets\n      direction\n      entryTimestamp\n      id\n    }\n  }\n"): (typeof documents)["\n  subscription getPositions($owner: String!) {\n    Position(where: { owner: { address: { _eq: $owner } } }) {\n      collateral\n      assets\n      direction\n      entryTimestamp\n      id\n    }\n  }\n"];
+export function graphql(source: "\n  subscription UserPositions($owner: String!) {\n    Position(where: { owner_id: { _eq: $owner }, isOpen: { _eq: false } }) {\n      collateral\n      direction\n      entryVolume\n      entryPrice\n      entryTimestamp\n      closePrice\n      totalPnL\n      pnl\n      borrowFeeAmount\n      fundingFeeAmount\n      id\n    }\n  }\n"): (typeof documents)["\n  subscription UserPositions($owner: String!) {\n    Position(where: { owner_id: { _eq: $owner }, isOpen: { _eq: false } }) {\n      collateral\n      direction\n      entryVolume\n      entryPrice\n      entryTimestamp\n      closePrice\n      totalPnL\n      pnl\n      borrowFeeAmount\n      fundingFeeAmount\n      id\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  subscription getPositions($owner: String!) {\n    Position(where: { owner: { address: { _eq: $owner } }, isOpen: { _eq: true } }) {\n      collateral\n      assets\n      direction\n      entryVolume\n      entryPrice\n      entryTimestamp\n      id\n    }\n  }\n"): (typeof documents)["\n  subscription getPositions($owner: String!) {\n    Position(where: { owner: { address: { _eq: $owner } }, isOpen: { _eq: true } }) {\n      collateral\n      assets\n      direction\n      entryVolume\n      entryPrice\n      entryTimestamp\n      id\n    }\n  }\n"];
 
 export function graphql(source: string) {
   return (documents as any)[source] ?? {};
