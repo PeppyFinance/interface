@@ -229,7 +229,7 @@ export const Pool = () => {
 
   return (
     <div className="flex flex-col items-center">
-      <Card className="my-6 bg-glass/30 backdrop-blur-md rounded-md w-[90%]">
+      <Card className="my-6 bg-glass/20 backdrop-blur-md rounded-md w-[90%]">
         <CardHeader className="pb-6">
           <CardTitle>Liquidity Pool Stats</CardTitle>
         </CardHeader>
