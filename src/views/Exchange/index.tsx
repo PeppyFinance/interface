@@ -8,7 +8,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useMaskito } from '@maskito/react';
 import { collateralTokenAddress, tradePairAddress } from '@/lib/addresses';
 import { useAccount, useReadContract, useWriteContract, useBlock } from 'wagmi';
-import { erc20Abi, parseEther, formatEther, encodeAbiParameters, getAbiItem } from 'viem';
+import { erc20Abi, parseEther, formatEther, encodeAbiParameters, Hex } from 'viem';
 import { useNavigate } from 'react-router-dom';
 import * as tradePairAbi from '@/abi/TradePair.json';
 import { connection, subscribeToPriceFeeds, unsubscribeToPriceFeeds } from '@/lib/pyth';
@@ -179,16 +179,16 @@ export const Exchange = () => {
             ],
             [
               {
-                id: '0x' + currentMarketState.priceFeedId,
+                id: ('0x' + currentMarketState.priceFeedId) as Hex,
                 price: {
-                  price: currentMarketState.price,
-                  conf: currentMarketState.confidence,
+                  price: BigInt(currentMarketState.price),
+                  conf: BigInt(currentMarketState.confidence),
                   expo: currentMarketState.expo,
                   publishTime: timestamp,
                 },
                 emaPrice: {
-                  price: currentMarketState.price,
-                  conf: currentMarketState.confidence,
+                  price: BigInt(currentMarketState.price),
+                  conf: BigInt(currentMarketState.confidence),
                   expo: currentMarketState.expo,
                   publishTime: timestamp,
                 },
@@ -241,13 +241,6 @@ export const Exchange = () => {
       refetchAllowance();
     }
   }, [statusApprove]);
-
-  useEffect(() => {
-    if (error) {
-      console.log(error);
-      console.log(failureReason);
-    }
-  }, [error, failureReason]);
 
   return (
     <div className="px-3 flex flex-col">
