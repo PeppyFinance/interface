@@ -7,13 +7,13 @@ import { InfoCircledIcon } from '@radix-ui/react-icons';
 import { useEffect, useMemo, useState } from 'react';
 import { useMaskito } from '@maskito/react';
 import { collateralTokenAddress, tradePairAddress } from '@/lib/addresses';
-import { useAccount, useReadContract, useWriteContract } from 'wagmi';
-import { erc20Abi, parseEther, formatEther } from 'viem';
+import { useAccount, useReadContract, useWriteContract, useBlock } from 'wagmi';
+import { erc20Abi, parseEther, formatEther, encodeAbiParameters, getAbiItem } from 'viem';
 import { useNavigate } from 'react-router-dom';
 import * as tradePairAbi from '@/abi/TradePair.json';
 import { connection, subscribeToPriceFeeds, unsubscribeToPriceFeeds } from '@/lib/pyth';
 import { formatPrice } from '@/lib/utils';
-import { useStore } from '@/store';
+import { useMarketStore } from '@/store';
 import { DollarMask } from '@/lib/masks';
 
 function parseCollateral(collateralString: string): bigint {
@@ -25,7 +25,7 @@ function formatPositionSize(positionSize: bigint): string {
 }
 
 export const Exchange = () => {
-  const { marketsState, currentMarket } = useStore();
+  const { marketsState, currentMarket } = useMarketStore();
   const navigate = useNavigate();
   const { address, isConnected } = useAccount();
   const { writeContract: writeContractOpenPosition, status: statusOpenPosition } =
@@ -41,6 +41,8 @@ export const Exchange = () => {
   const [collateral, setCollateral] = useState<string>('$ 0');
   const [leverage, setLeverage] = useState<number>(2);
   const [direction, setDirection] = useState<1 | -1>(1);
+
+  const block = useBlock();
 
   const parsedCollateral = useMemo(
     () => parseEther(String(parseCollateral(collateral))),
@@ -104,9 +106,101 @@ export const Exchange = () => {
         args: [tradePairAddress, parsedCollateral],
       });
     } else {
-      const priceFeedUpdateData = await connection.getPriceFeedsUpdateData([
-        currentMarketState.priceFeedId,
-      ]);
+      let priceFeedUpdateData;
+      const timestamp = block.data?.timestamp;
+      if (import.meta.env.MODE === 'anvil') {
+        // on a local anvil chain, we use MockPyth and have to encode the data ourselves
+        priceFeedUpdateData = [
+          encodeAbiParameters(
+            [
+              {
+                components: [
+                  {
+                    internalType: 'bytes32',
+                    name: 'id',
+                    type: 'bytes32',
+                  },
+                  {
+                    components: [
+                      {
+                        internalType: 'int64',
+                        name: 'price',
+                        type: 'int64',
+                      },
+                      {
+                        internalType: 'uint64',
+                        name: 'conf',
+                        type: 'uint64',
+                      },
+                      {
+                        internalType: 'int32',
+                        name: 'expo',
+                        type: 'int32',
+                      },
+                      {
+                        internalType: 'uint64',
+                        name: 'publishTime',
+                        type: 'uint64',
+                      },
+                    ],
+                    name: 'price',
+                    type: 'tuple',
+                  },
+                  {
+                    components: [
+                      {
+                        internalType: 'int64',
+                        name: 'price',
+                        type: 'int64',
+                      },
+                      {
+                        internalType: 'uint64',
+                        name: 'conf',
+                        type: 'uint64',
+                      },
+                      {
+                        internalType: 'int32',
+                        name: 'expo',
+                        type: 'int32',
+                      },
+                      {
+                        internalType: 'uint64',
+                        name: 'publishTime',
+                        type: 'uint64',
+                      },
+                    ],
+                    name: 'emaPrice',
+                    type: 'tuple',
+                  },
+                ],
+                name: 'PriceFeed',
+                type: 'tuple',
+              },
+            ],
+            [
+              {
+                id: '0x' + currentMarketState.priceFeedId,
+                price: {
+                  price: currentMarketState.price,
+                  conf: currentMarketState.confidence,
+                  expo: currentMarketState.expo,
+                  publishTime: timestamp,
+                },
+                emaPrice: {
+                  price: currentMarketState.price,
+                  conf: currentMarketState.confidence,
+                  expo: currentMarketState.expo,
+                  publishTime: timestamp,
+                },
+              },
+            ]
+          ),
+        ];
+      } else {
+        priceFeedUpdateData = await connection.getPriceFeedsUpdateData([
+          currentMarketState.priceFeedId,
+        ]);
+      }
 
       writeContractOpenPosition({
         address: tradePairAddress,
@@ -114,6 +208,7 @@ export const Exchange = () => {
         functionName: 'openPosition',
         // TODO: place price data in here
         args: [parsedCollateral, leverage * 1_000_000, direction, priceFeedUpdateData],
+        value: 1n,
       });
     }
   };
@@ -146,6 +241,13 @@ export const Exchange = () => {
       refetchAllowance();
     }
   }, [statusApprove]);
+
+  useEffect(() => {
+    if (error) {
+      console.log(error);
+      console.log(failureReason);
+    }
+  }, [error, failureReason]);
 
   return (
     <div className="px-3 flex flex-col">

@@ -6,6 +6,8 @@ interface MarketState {
   currentPrice: number;
   confidence: number;
   publishTime: Date;
+  price: number;
+  expo: number;
 }
 
 interface AppState {
@@ -15,13 +17,13 @@ interface AppState {
   setCurrentMarket: (market: Market) => void;
 }
 
-export const useStore = create<AppState>()(set => ({
-  currentMarket: Market.BTCUSD,
+export const useMarketStore = create<AppState>()(set => ({
+  currentMarket: Market.IOTAUSD,
   marketsState: {
+    IOTAUSD: null,
     BTCUSD: null,
     ETHUSD: null,
     LTCUSD: null,
-    IOTAUSD: null,
     AVAXUSD: null,
     DOGEUSD: null,
     SHIBUSD: null,

@@ -3,6 +3,7 @@ import { Exchange } from './views/Exchange';
 import { Layout } from './Layout';
 import { LandingPage } from './views/LandingPage';
 import { PositionList } from './components/PositionList';
+import { ClosedPositionList } from './components/ClosedPositionList';
 import { Pool } from './views/Pool';
 
 export const router = createBrowserRouter(
@@ -11,6 +12,7 @@ export const router = createBrowserRouter(
       <Route path="/" element={<LandingPage />} />
       <Route path="/exchange" element={<Exchange />} />
       <Route path="/positions" element={<PositionList />} />
+      <Route path="/closed-positions" element={<ClosedPositionList />} />
       <Route path="/pool" element={<Pool />} />
     </Route>
   )

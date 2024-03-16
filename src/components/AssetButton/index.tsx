@@ -22,11 +22,16 @@ import { ScrollArea } from '../ui/scroll-area';
 import { useEffect, useState } from 'react';
 import classNames from 'classnames';
 import { Market } from '@/types';
-import { useStore } from '@/store';
+import { useMarketStore } from '@/store';
 import { formatPrice } from '@/lib/utils';
 import { Asset } from '../Asset';
 
 const assets = [
+  {
+    key: 'iota',
+    value: 'IOTA',
+    market: Market.IOTAUSD,
+  },
   {
     key: 'eth',
     value: 'ETH',
@@ -41,11 +46,6 @@ const assets = [
     key: 'ltc',
     value: 'LTC',
     market: Market.LTCUSD,
-  },
-  {
-    key: 'iota',
-    value: 'IOTA',
-    market: Market.IOTAUSD,
   },
   {
     key: 'avax',
@@ -65,7 +65,7 @@ const assets = [
 ];
 
 const TriggerButton = () => {
-  const { marketsState, setCurrentMarket } = useStore();
+  const { marketsState, setCurrentMarket } = useMarketStore();
   const [selectedAsset, setSelectedAsset] = useState<{
     key: string;
     value: string;
@@ -75,9 +75,9 @@ const TriggerButton = () => {
   // TODO: this should be dispatched to the global store, so other
   // components can consume the current price of current asset.
   const [chosenAsset, setChosenAsset] = useState<{ key: string; value: string; market: Market }>({
-    key: 'eth',
-    value: 'ETH',
-    market: Market.ETHUSD,
+    key: 'iota',
+    value: 'IOTA',
+    market: Market.IOTAUSD,
   });
 
   const assetPrice = marketsState[chosenAsset.market]?.currentPrice;

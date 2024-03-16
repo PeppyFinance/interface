@@ -8,10 +8,12 @@ import { graphql } from '@/graphql';
 
 const newPositionsSubscription = graphql(/* GraphQL */ `
   subscription getPositions($owner: String!) {
-    Position(where: { owner: { address: { _eq: $owner } } }) {
+    Position(where: { owner: { address: { _eq: $owner } }, isOpen: { _eq: true } }) {
       collateral
       assets
       direction
+      entryVolume
+      entryPrice
       entryTimestamp
       id
     }
@@ -55,7 +57,6 @@ export function PositionList() {
   });
 
   const { data, fetching, error } = result;
-  console.log(data);
 
   if (fetching) return <div>Loading...</div>;
 

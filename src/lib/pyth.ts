@@ -1,4 +1,4 @@
-import { useStore } from '@/store';
+import { useMarketStore } from '@/store';
 import { Market } from '@/types';
 import { EvmPriceServiceConnection, PriceFeed } from '@pythnetwork/pyth-evm-js';
 
@@ -19,11 +19,13 @@ function storePrice(priceFeed: PriceFeed) {
   const priceStruct = priceFeed.getPriceUnchecked();
   const price = Number(priceStruct.price) * 10 ** priceStruct.expo;
 
-  useStore.getState().setMarketState(priceFeedIdToMarketMap[priceFeed.id.toLowerCase()], {
+  useMarketStore.getState().setMarketState(priceFeedIdToMarketMap[priceFeed.id.toLowerCase()], {
     priceFeedId: priceFeed.id,
     currentPrice: price,
     confidence: Number(priceStruct.conf),
     publishTime: new Date(priceStruct.publishTime),
+    price: priceStruct.price,
+    expo: priceStruct.expo,
   });
 }
 

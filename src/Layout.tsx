@@ -21,6 +21,9 @@ const Header = ({ title, subtitle }: HeaderProps) => {
         <Link className="font-thin underline" to="/positions">
           Positions
         </Link>
+        <Link className="font-thin underline" to="/closed-positions">
+          Closed
+        </Link>
         <Link className="font-thin underline" to="/pool">
           Pool
         </Link>
@@ -37,6 +40,8 @@ export const Layout = () => {
         return ['Trading', 'Buy Position'];
       case '/positions':
         return ['Positions', ''];
+      case '/closed-positions':
+        return ['Closed Positions', ''];
       case '/pool':
         return ['Liquidity Pool', 'Stats'];
       default:
