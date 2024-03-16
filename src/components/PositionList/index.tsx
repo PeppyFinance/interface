@@ -1,11 +1,10 @@
-import { graphql } from '@/graphql/generated';
-import { GetPositionsSubscription } from '@/graphql/generated/graphql';
 import { useNavigate } from 'react-router-dom';
 import { useSubscription } from 'urql';
 import { useAccount } from 'wagmi';
 import { Card, CardContent, CardHeader } from '../ui/card';
 import { ScrollArea } from '../ui/scroll-area';
 import classNames from 'classnames';
+import { graphql } from '@/graphql';
 
 const newPositionsSubscription = graphql(/* GraphQL */ `
   subscription getPositions($owner: String!) {
@@ -20,8 +19,8 @@ const newPositionsSubscription = graphql(/* GraphQL */ `
 `);
 
 interface PositionProps {
-  collateral: bigint;
-  assets: bigint;
+  collateral: string;
+  assets: string;
   isLong: boolean;
 }
 
@@ -45,14 +44,15 @@ export function PositionList() {
   const navigate = useNavigate();
   const { address, isConnected } = useAccount();
 
-  const [result] = useSubscription<GetPositionsSubscription>({
+  if (address === undefined || !isConnected) {
+    navigate('/');
+    return;
+  }
+
+  const [result] = useSubscription({
     query: newPositionsSubscription,
     variables: { owner: address },
   });
-
-  if (address === undefined || !isConnected) {
-    navigate('/');
-  }
 
   const { data, fetching, error } = result;
   console.log(data);

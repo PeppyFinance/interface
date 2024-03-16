@@ -17,7 +17,7 @@ export type Scalars = {
   contract_type: { input: any; output: any; }
   event_type: { input: any; output: any; }
   json: { input: any; output: any; }
-  numeric: { input: any; output: any; }
+  numeric: { input: string; output: string; }
   timestamp: { input: any; output: any; }
 };
 
@@ -1587,7 +1587,7 @@ export type GetPositionsSubscriptionVariables = Exact<{
 }>;
 
 
-export type GetPositionsSubscription = { __typename?: 'subscription_root', Position: Array<{ __typename?: 'Position', collateral: any, assets: any, direction: any, entryTimestamp: any, id: string }> };
+export type GetPositionsSubscription = { __typename?: 'subscription_root', Position: Array<{ __typename?: 'Position', collateral: string, assets: string, direction: string, entryTimestamp: string, id: string }> };
 
 
 export const GetPositionsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"subscription","name":{"kind":"Name","value":"getPositions"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"owner"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"Position"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"where"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"owner"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"address"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"_eq"},"value":{"kind":"Variable","name":{"kind":"Name","value":"owner"}}}]}}]}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"collateral"}},{"kind":"Field","name":{"kind":"Name","value":"assets"}},{"kind":"Field","name":{"kind":"Name","value":"direction"}},{"kind":"Field","name":{"kind":"Name","value":"entryTimestamp"}},{"kind":"Field","name":{"kind":"Name","value":"id"}}]}}]}}]} as unknown as DocumentNode<GetPositionsSubscription, GetPositionsSubscriptionVariables>;

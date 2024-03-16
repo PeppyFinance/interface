@@ -12,6 +12,8 @@
     "codegen": "graphql-codegen"
   },
   "dependencies": {
+    "@graphql-codegen/typescript-urql": "^4.0.0",
+    "@graphql-typed-document-node/core": "^3.2.0",
     "@maskito/core": "^2.1.0",
     "@maskito/kit": "^2.1.0",
     "@maskito/react": "^2.1.0",
