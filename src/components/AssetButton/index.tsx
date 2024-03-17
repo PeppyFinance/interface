@@ -25,6 +25,7 @@ import { Market } from '@/types';
 import { useMarketStore } from '@/store';
 import { formatPrice } from '@/lib/utils';
 import { Asset } from '../Asset';
+import { TradingViewChart } from '../TradingView';
 
 const assets = [
   {
@@ -127,10 +128,18 @@ const TriggerButton = () => {
           </DrawerFooter>
         </DrawerContent>
       </Drawer>
-      <div className="flex flex-col items-center justify-center">
-        <p className="text-lg">{assetPrice ? formatPrice(assetPrice) : '$ ...'}</p>
-        <p className="text-xxs underline">observe in graph</p>
-      </div>
+      <Drawer>
+        <DrawerTrigger>
+          <div className="flex flex-col items-center justify-center">
+            <p className="text-lg">{assetPrice ? formatPrice(assetPrice) : '$ ...'}</p>
+            <p className="text-xxs underline">observe in graph</p>
+          </div>
+        </DrawerTrigger>
+        <DrawerContent className="h-[80%]">
+          <DrawerHeader className="p-2" />
+          <TradingViewChart />
+        </DrawerContent>
+      </Drawer>
     </div>
   );
 };

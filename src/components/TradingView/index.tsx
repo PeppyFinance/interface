@@ -11,7 +11,7 @@ export const TradingViewChart = () => {
       allow_symbol_change={false}
       symbol={`PYTH:${market.toString()}`}
       locale="en"
+      hide_side_toolbar={true}
     />
   );
 };
-
