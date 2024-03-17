@@ -33,4 +33,7 @@ createWeb3Modal({
   wagmiConfig: config,
   projectId,
   enableAnalytics: true, // Optional - defaults to your Cloud configuration
+  themeVariables: {
+    '--w3m-font-family': 'Space Grotesk',
+  },
 });

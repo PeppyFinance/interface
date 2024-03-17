@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import './App.css';
-import { Link, Outlet } from 'react-router-dom';
+import { Link, Outlet, useLocation } from 'react-router-dom';
 import { HamburgerMenuIcon } from '@radix-ui/react-icons';
 import { SheetContent, SheetHeader, SheetTitle, Sheet } from './components/ui/sheet';
 
@@ -16,6 +16,9 @@ const Header = () => {
             <SheetTitle>Menu</SheetTitle>
           </SheetHeader>
           <div className="flex flex-col space-y-8 mt-8">
+            <Link to="/" onClick={() => setMenuOpen(false)}>
+              Homepage
+            </Link>
             <Link to="/exchange" onClick={() => setMenuOpen(false)}>
               Exchange
             </Link>
@@ -31,6 +34,7 @@ const Header = () => {
           </div>
         </SheetContent>
       </Sheet>
+      <w3m-button />
     </div>
   );
 };
