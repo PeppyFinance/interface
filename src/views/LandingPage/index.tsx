@@ -7,7 +7,7 @@ export const LandingPage = () => {
       <div className="flex flex-col w-full">
         <Carousel className="flex-grow">
           <CarouselContent>
-            {Array.from({ length: 4 }).map((_, index) => (
+            {Array.from({ length: 1 }).map((_, index) => (
               <CarouselItem key={index}>
                 <div className="p-8 flex h-full flex-col items-center">
                   <p className="text-[4.125rem] font-bold text-wrap text-center text-shadow leading-[90%]">

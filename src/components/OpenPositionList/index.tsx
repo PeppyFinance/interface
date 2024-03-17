@@ -1,4 +1,3 @@
-import { useNavigate } from 'react-router-dom';
 import { useSubscription } from 'urql';
 import { useAccount, useBlock, useWriteContract } from 'wagmi';
 import { Card, CardContent, CardFooter, CardHeader } from '../ui/card';
@@ -197,18 +196,21 @@ const Position = ({ id, size, collateral, entryPrice, isLong }: PositionProps) =
 };
 
 export function OpenPositionList() {
-  const navigate = useNavigate();
-  const { address, isConnected } = useAccount();
-
-  if (address === undefined || !isConnected) {
-    navigate('/');
-    return;
-  }
+  const { address, status } = useAccount();
 
   const [result] = useSubscription({
     query: newPositionsSubscription,
-    variables: { owner: address },
+    variables: { owner: address || '' },
+    pause: !address,
   });
+
+  if (status !== 'connected') {
+    return (
+      <div className="flex justify-center px-6 pt-8">
+        Connect your wallet to see your open positions.
+      </div>
+    );
+  }
 
   const { data, fetching } = result;
 
@@ -217,8 +219,8 @@ export function OpenPositionList() {
   return (
     <div className="flex justify-center">
       <ScrollArea className="w-[90%]">
-        {data
-          ? data.Position.map(position => (
+        {data && data.Position.length !== 0 ? (
+          data.Position.map(position => (
             <Position
               key={position.id}
               id={position.id}
@@ -228,7 +230,9 @@ export function OpenPositionList() {
               isLong={position.direction === '1'}
             />
           ))
-          : []}
+        ) : (
+          <div className="px-4 py-8">No open positions.</div>
+        )}
       </ScrollArea>
     </div>
   );

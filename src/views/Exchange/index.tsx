@@ -9,7 +9,6 @@ import { useMaskito } from '@maskito/react';
 import { collateralTokenAddress, tradePairAddress } from '@/lib/addresses';
 import { useAccount, useReadContract, useWriteContract, useBlock } from 'wagmi';
 import { erc20Abi, parseEther, formatEther, encodeAbiParameters, Hex } from 'viem';
-import { useNavigate } from 'react-router-dom';
 import * as tradePairAbi from '@/abi/TradePair.json';
 import { connection, subscribeToPriceFeeds, unsubscribeToPriceFeeds } from '@/lib/pyth';
 import { formatPrice } from '@/lib/utils';
@@ -26,17 +25,11 @@ function formatPositionSize(positionSize: bigint): string {
 
 export const Exchange = () => {
   const { marketsState, currentMarket } = useMarketStore();
-  const navigate = useNavigate();
-  const { address, isConnected } = useAccount();
+  const { address, status } = useAccount();
   const { writeContract: writeContractOpenPosition, status: statusOpenPosition } =
     useWriteContract();
   const { writeContract: writeContractApprove, status: statusApprove } = useWriteContract();
   const maskedInputRef = useMaskito({ options: DollarMask });
-
-  if (address === undefined || !isConnected) {
-    navigate('/');
-    return;
-  }
 
   const [collateral, setCollateral] = useState<string>('$ 0');
   const [leverage, setLeverage] = useState<number>(2);
@@ -81,14 +74,16 @@ export const Exchange = () => {
 
   const buttonText = useMemo(
     () =>
-      !hasSufficientSize
-        ? 'Insufficient size'
-        : !hasEnoughBalance
-          ? 'Not enough funds'
-          : !hasEnoughAllowance
-            ? 'Approve'
-            : 'Open Position',
-    [hasSufficientSize, hasEnoughBalance, hasEnoughAllowance]
+      status !== 'connected'
+        ? 'Wallet not connected'
+        : !hasSufficientSize
+          ? 'Insufficient size'
+          : !hasEnoughBalance
+            ? 'Not enough funds'
+            : !hasEnoughAllowance
+              ? 'Approve'
+              : 'Open Position',
+    [hasSufficientSize, hasEnoughBalance, hasEnoughAllowance, status]
   );
 
   const currentMarketState = marketsState[currentMarket];
@@ -356,7 +351,7 @@ export const Exchange = () => {
           </CardContent>
           <CardFooter>
             <Button
-              disabled={!hasEnoughBalance || !hasSufficientSize}
+              disabled={!hasEnoughBalance || !hasSufficientSize || status !== 'connected'}
               className="w-full mr-2"
               fontWeight="heavy"
               size="lg"

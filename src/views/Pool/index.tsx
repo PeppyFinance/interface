@@ -27,8 +27,7 @@ function parseLpString(str: string): bigint {
 }
 
 export const Pool = () => {
-  const navigate = useNavigate();
-  const { address, isConnected } = useAccount();
+  const { address, status } = useAccount();
   const [depositAmount, setDepositAmount] = useState<string>('$ 0');
   const [redemptionAmount, setRedemptionAmount] = useState<string>('0 PLP');
   const [isDepositDrawerOpen, setDepositDrawerOpen] = useState<boolean>(false);
@@ -39,12 +38,6 @@ export const Pool = () => {
 
   const dollarMaskedInputRef = useMaskito({ options: DollarMask });
   const lpMaskedInputRef = useMaskito({ options: LpMask });
-
-  // TODO: should probably allow reading pool stats
-  if (address === undefined || !isConnected) {
-    navigate('/');
-    return;
-  }
 
   const parsedDepositAmount = useMemo(() => parseUsdString(depositAmount), [depositAmount]);
   const parsedRedemptionAmount = useMemo(() => parseLpString(redemptionAmount), [redemptionAmount]);
@@ -142,24 +135,28 @@ export const Pool = () => {
 
   const depositButtonText = useMemo(
     () =>
-      !hasSufficientBalance
-        ? 'Not enough funds'
-        : !hasSufficientAllowance
-          ? 'Approve'
-          : !hasSufficientDepositAmount
-            ? 'Insufficient Amount'
-            : 'Deposit',
-    [hasSufficientBalance, hasSufficientAllowance, hasSufficientDepositAmount]
+      status !== 'connected'
+        ? 'Wallet not connected'
+        : !hasSufficientBalance
+          ? 'Not enough funds'
+          : !hasSufficientAllowance
+            ? 'Approve'
+            : !hasSufficientDepositAmount
+              ? 'Insufficient Amount'
+              : 'Deposit',
+    [hasSufficientBalance, hasSufficientAllowance, hasSufficientDepositAmount, status]
   );
 
   const redeemButtonText = useMemo(
     () =>
-      !hasSufficientShares
-        ? 'Not enough shares'
-        : !hasSufficientRedemptionAmount
-          ? 'Insufficient Amount'
-          : 'Redeem',
-    [hasSufficientShares, hasSufficientRedemptionAmount]
+      status !== 'connected'
+        ? 'Wallet not connected'
+        : !hasSufficientShares
+          ? 'Not enough shares'
+          : !hasSufficientRedemptionAmount
+            ? 'Insufficient Amount'
+            : 'Redeem',
+    [hasSufficientShares, hasSufficientRedemptionAmount, status]
   );
 
   const deposit = () => {
@@ -323,7 +320,9 @@ export const Pool = () => {
                     variant="primary"
                     size="lg"
                     fontWeight="heavy"
-                    disabled={!hasSufficientDepositAmount || !hasSufficientBalance}
+                    disabled={
+                      !hasSufficientDepositAmount || !hasSufficientBalance || status !== 'connected'
+                    }
                     onClick={deposit}
                   >
                     {depositButtonText}
@@ -379,7 +378,11 @@ export const Pool = () => {
                     variant="primary"
                     size="lg"
                     fontWeight="heavy"
-                    disabled={!hasSufficientRedemptionAmount || !hasSufficientShares}
+                    disabled={
+                      !hasSufficientRedemptionAmount ||
+                      !hasSufficientShares ||
+                      status !== 'connected'
+                    }
                     onClick={redeem}
                   >
                     {redeemButtonText}
