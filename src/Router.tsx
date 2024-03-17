@@ -11,7 +11,7 @@ export const router = createBrowserRouter(
     <Route path="/" element={<Layout />}>
       <Route path="/" element={<LandingPage />} />
       <Route path="/exchange" element={<Exchange />} />
-      <Route path="/positions" element={<OpenPositionList />} />
+      <Route path="/open-positions" element={<OpenPositionList />} />
       <Route path="/closed-positions" element={<ClosedPositionList />} />
       <Route path="/pool" element={<Pool />} />
     </Route>

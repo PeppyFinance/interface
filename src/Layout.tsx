@@ -1,57 +1,44 @@
-import { useMemo } from 'react';
+import { useState } from 'react';
 import './App.css';
-import { Link, Outlet, useLocation } from 'react-router-dom';
+import { Link, Outlet } from 'react-router-dom';
+import { HamburgerMenuIcon } from '@radix-ui/react-icons';
+import { SheetContent, SheetHeader, SheetTitle, Sheet } from './components/ui/sheet';
 
-interface HeaderProps {
-  title: string;
-  subtitle: string;
-}
+const Header = () => {
+  const [menuOpen, setMenuOpen] = useState<boolean>(false);
 
-const Header = ({ title, subtitle }: HeaderProps) => {
   return (
-    <div className="flex justify-between px-3 py-2">
-      <div>
-        <h1 className="font-medium">{title}</h1>
-        <h2>{subtitle}</h2>
-      </div>
-      <div className="space-x-2">
-        <Link className="font-thin underline" to="/exchange">
-          Trade
-        </Link>
-        <Link className="font-thin underline" to="/positions">
-          Positions
-        </Link>
-        <Link className="font-thin underline" to="/closed-positions">
-          Closed
-        </Link>
-        <Link className="font-thin underline" to="/pool">
-          Pool
-        </Link>
-      </div>
+    <div className="bg-glass/30 shadow-default backdrop-blur-md flex justify-between px-3 py-2 h-12">
+      <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
+        <HamburgerMenuIcon className="w-7 h-full" onClick={() => setMenuOpen(true)} />
+        <SheetContent side="left">
+          <SheetHeader>
+            <SheetTitle>Menu</SheetTitle>
+          </SheetHeader>
+          <div className="flex flex-col space-y-8 mt-8">
+            <Link to="/exchange" onClick={() => setMenuOpen(false)}>
+              Exchange
+            </Link>
+            <Link to="/open-positions" onClick={() => setMenuOpen(false)}>
+              Open Positions
+            </Link>
+            <Link to="/closed-positions" onClick={() => setMenuOpen(false)}>
+              Closed Positions
+            </Link>
+            <Link to="/pool" onClick={() => setMenuOpen(false)}>
+              Pool
+            </Link>
+          </div>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 };
 
 export const Layout = () => {
-  const location = useLocation();
-  const [title, subtitle] = useMemo(() => {
-    switch (location.pathname) {
-      case '/exchange':
-        return ['Trading', 'Buy Position'];
-      case '/positions':
-        return ['Positions', ''];
-      case '/closed-positions':
-        return ['Closed Positions', ''];
-      case '/pool':
-        return ['Liquidity Pool', 'Stats'];
-      default:
-        return ['', ''];
-    }
-  }, [location]);
-
   return (
     <div className="tracking-widest h-full bg-[url('/background.png')] bg-center bg-cover relative">
-      <Header title={title} subtitle={subtitle} />
+      <Header />
       <Outlet />
     </div>
   );
