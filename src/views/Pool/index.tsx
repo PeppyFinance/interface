@@ -76,6 +76,13 @@ export const Pool = () => {
     args: [parsedRedemptionAmount],
   });
 
+  const { data: ownedLiquidity } = useReadContract({
+    address: liquidityPoolAddress,
+    abi: LiquidityPoolAbi,
+    functionName: 'previewRedeem',
+    args: [ownedShares],
+  });
+
   const { data: balance, refetch: refetchBalance } = useReadContract({
     address: collateralTokenAddress,
     abi: erc20Abi,
@@ -243,10 +250,12 @@ export const Pool = () => {
               <div className="flex justify-between">
                 <p>Owned Liquidity:</p>
                 <p>
-                  $
-                  {previewedAmountOnRedeem !== undefined
-                    ? Number(previewedAmountOnRedeem / BigInt(1e18)).toLocaleString()
-                    : '--'}
+                  <p>
+                    $
+                    {ownedLiquidity !== undefined
+                      ? Number(ownedLiquidity / BigInt(1e18)).toLocaleString()
+                      : '--'}
+                  </p>
                 </p>
               </div>
             </div>
