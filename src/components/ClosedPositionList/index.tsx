@@ -133,7 +133,7 @@ export function ClosedPositionList() {
             />
           ))
         ) : (
-          <div className="px-4 py-8">No open positions.</div>
+          <div className="px-4 py-8">No closed positions.</div>
         )}
       </ScrollArea>
     </div>
