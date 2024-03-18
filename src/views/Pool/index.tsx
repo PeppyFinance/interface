@@ -16,7 +16,6 @@ import { DollarMask, LpMask } from '@/lib/masks';
 import { useEffect, useMemo, useState } from 'react';
 import { InfoCircledIcon } from '@radix-ui/react-icons';
 import { erc20Abi } from 'viem';
-import { useNavigate } from 'react-router-dom';
 
 function parseUsdString(str: string): bigint {
   return BigInt(str.replaceAll('$', '').replaceAll(',', '').replaceAll(' ', '')) * BigInt(1e18);
@@ -243,7 +242,12 @@ export const Pool = () => {
               </div>
               <div className="flex justify-between">
                 <p>Owned Liquidity:</p>
-                <p>???</p>
+                <p>
+                  $
+                  {previewedAmountOnRedeem !== undefined
+                    ? Number(previewedAmountOnRedeem / BigInt(1e18)).toLocaleString()
+                    : '--'}
+                </p>
               </div>
             </div>
             <div>
@@ -265,6 +269,10 @@ export const Pool = () => {
             <div>
               <div className="flex justify-between">
                 <p>Borrow Rate:</p>
+                <p>0% / h</p>
+              </div>
+              <div className="flex justify-between">
+                <p>Funding Rate:</p>
                 <p>0% / h</p>
               </div>
             </div>
