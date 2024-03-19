@@ -7,13 +7,12 @@ import { InfoCircledIcon } from '@radix-ui/react-icons';
 import { useEffect, useMemo, useState } from 'react';
 import { useMaskito } from '@maskito/react';
 import { collateralTokenAddress, tradePairAddress } from '@/lib/addresses';
-import { useAccount, useReadContract, useWriteContract } from 'wagmi';
-import { erc20Abi, parseEther, formatEther } from 'viem';
-import { useNavigate } from 'react-router-dom';
+import { useAccount, useReadContract, useWriteContract, useBlock } from 'wagmi';
+import { erc20Abi, parseEther, formatEther, encodeAbiParameters, Hex } from 'viem';
 import * as tradePairAbi from '@/abi/TradePair.json';
 import { connection, subscribeToPriceFeeds, unsubscribeToPriceFeeds } from '@/lib/pyth';
 import { formatPrice } from '@/lib/utils';
-import { useStore } from '@/store';
+import { useMarketStore } from '@/store';
 import { DollarMask } from '@/lib/masks';
 
 function parseCollateral(collateralString: string): bigint {
@@ -25,20 +24,18 @@ function formatPositionSize(positionSize: bigint): string {
 }
 
 export const Exchange = () => {
-  const { marketsState, currentMarket } = useStore();
-  const navigate = useNavigate();
-  const { address, isConnected } = useAccount();
-  const { error, failureReason, writeContract } = useWriteContract();
+  const { marketsState, currentMarket } = useMarketStore();
+  const { address, status } = useAccount();
+  const { writeContract: writeContractOpenPosition, status: statusOpenPosition } =
+    useWriteContract();
+  const { writeContract: writeContractApprove, status: statusApprove } = useWriteContract();
   const maskedInputRef = useMaskito({ options: DollarMask });
-
-  if (address === undefined || !isConnected) {
-    navigate('/');
-    return;
-  }
 
   const [collateral, setCollateral] = useState<string>('$ 0');
   const [leverage, setLeverage] = useState<number>(2);
   const [direction, setDirection] = useState<1 | -1>(1);
+
+  const block = useBlock();
 
   const parsedCollateral = useMemo(
     () => parseEther(String(parseCollateral(collateral))),
@@ -49,14 +46,14 @@ export const Exchange = () => {
     [parsedCollateral, leverage]
   );
 
-  const { data: balance } = useReadContract({
+  const { data: balance, refetch: refetchBalance } = useReadContract({
     address: collateralTokenAddress,
     abi: erc20Abi,
     functionName: 'balanceOf',
     args: [address],
   });
 
-  const { data: allowance } = useReadContract({
+  const { data: allowance, refetch: refetchAllowance } = useReadContract({
     address: collateralTokenAddress,
     abi: erc20Abi,
     functionName: 'allowance',
@@ -77,14 +74,16 @@ export const Exchange = () => {
 
   const buttonText = useMemo(
     () =>
-      !hasSufficientSize
-        ? 'Insufficient size'
-        : !hasEnoughBalance
-          ? 'Not enough funds'
-          : !hasEnoughAllowance
-            ? 'Approve'
-            : 'Open Position',
-    [hasSufficientSize, hasEnoughBalance, hasEnoughAllowance]
+      status !== 'connected'
+        ? 'Wallet not connected'
+        : !hasSufficientSize
+          ? 'Insufficient size'
+          : !hasEnoughBalance
+            ? 'Not enough funds'
+            : !hasEnoughAllowance
+              ? 'Approve'
+              : 'Open Position',
+    [hasSufficientSize, hasEnoughBalance, hasEnoughAllowance, status]
   );
 
   const currentMarketState = marketsState[currentMarket];
@@ -95,23 +94,116 @@ export const Exchange = () => {
     }
 
     if (!hasEnoughAllowance) {
-      writeContract({
+      writeContractApprove({
         address: collateralTokenAddress,
         abi: erc20Abi,
         functionName: 'approve',
         args: [tradePairAddress, parsedCollateral],
       });
     } else {
-      const priceFeedUpdateData = await connection.getPriceFeedsUpdateData([
-        currentMarketState.priceFeedId,
-      ]);
+      let priceFeedUpdateData;
+      const timestamp = block.data?.timestamp;
+      if (import.meta.env.MODE === 'anvil') {
+        // on a local anvil chain, we use MockPyth and have to encode the data ourselves
+        priceFeedUpdateData = [
+          encodeAbiParameters(
+            [
+              {
+                components: [
+                  {
+                    internalType: 'bytes32',
+                    name: 'id',
+                    type: 'bytes32',
+                  },
+                  {
+                    components: [
+                      {
+                        internalType: 'int64',
+                        name: 'price',
+                        type: 'int64',
+                      },
+                      {
+                        internalType: 'uint64',
+                        name: 'conf',
+                        type: 'uint64',
+                      },
+                      {
+                        internalType: 'int32',
+                        name: 'expo',
+                        type: 'int32',
+                      },
+                      {
+                        internalType: 'uint64',
+                        name: 'publishTime',
+                        type: 'uint64',
+                      },
+                    ],
+                    name: 'price',
+                    type: 'tuple',
+                  },
+                  {
+                    components: [
+                      {
+                        internalType: 'int64',
+                        name: 'price',
+                        type: 'int64',
+                      },
+                      {
+                        internalType: 'uint64',
+                        name: 'conf',
+                        type: 'uint64',
+                      },
+                      {
+                        internalType: 'int32',
+                        name: 'expo',
+                        type: 'int32',
+                      },
+                      {
+                        internalType: 'uint64',
+                        name: 'publishTime',
+                        type: 'uint64',
+                      },
+                    ],
+                    name: 'emaPrice',
+                    type: 'tuple',
+                  },
+                ],
+                name: 'PriceFeed',
+                type: 'tuple',
+              },
+            ],
+            [
+              {
+                id: ('0x' + currentMarketState.priceFeedId) as Hex,
+                price: {
+                  price: BigInt(currentMarketState.price),
+                  conf: BigInt(currentMarketState.confidence),
+                  expo: currentMarketState.expo,
+                  publishTime: timestamp,
+                },
+                emaPrice: {
+                  price: BigInt(currentMarketState.price),
+                  conf: BigInt(currentMarketState.confidence),
+                  expo: currentMarketState.expo,
+                  publishTime: timestamp,
+                },
+              },
+            ]
+          ),
+        ];
+      } else {
+        priceFeedUpdateData = await connection.getPriceFeedsUpdateData([
+          currentMarketState.priceFeedId,
+        ]);
+      }
 
-      writeContract({
+      writeContractOpenPosition({
         address: tradePairAddress,
         abi: tradePairAbi.abi,
         functionName: 'openPosition',
         // TODO: place price data in here
         args: [parsedCollateral, leverage * 1_000_000, direction, priceFeedUpdateData],
+        value: 1n,
       });
     }
   };
@@ -133,9 +225,17 @@ export const Exchange = () => {
   }, []);
 
   useEffect(() => {
-    console.log(error);
-    console.log(failureReason);
-  }, [error, failureReason]);
+    if (statusOpenPosition === 'success') {
+      refetchBalance();
+      refetchAllowance();
+    }
+  }, [statusOpenPosition]);
+
+  useEffect(() => {
+    if (statusApprove === 'success') {
+      refetchAllowance();
+    }
+  }, [statusApprove]);
 
   return (
     <div className="px-3 flex flex-col">
@@ -251,7 +351,7 @@ export const Exchange = () => {
           </CardContent>
           <CardFooter>
             <Button
-              disabled={!hasEnoughBalance || !hasSufficientSize}
+              disabled={!hasEnoughBalance || !hasSufficientSize || status !== 'connected'}
               className="w-full mr-2"
               fontWeight="heavy"
               size="lg"

@@ -1,8 +1,8 @@
 import { AdvancedRealTimeChart } from 'react-ts-tradingview-widgets';
-import { useStore } from '@/store';
+import { useMarketStore } from '@/store';
 
 export const TradingViewChart = () => {
-  const market = useStore(state => state.currentMarket);
+  const market = useMarketStore(state => state.currentMarket);
 
   return (
     <AdvancedRealTimeChart
@@ -11,6 +11,7 @@ export const TradingViewChart = () => {
       allow_symbol_change={false}
       symbol={`PYTH:${market.toString()}`}
       locale="en"
+      hide_side_toolbar={true}
     />
   );
 };

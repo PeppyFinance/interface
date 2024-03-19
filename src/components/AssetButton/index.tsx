@@ -19,43 +19,20 @@ import {
   DrawerTrigger,
 } from '../ui/drawer';
 import { ScrollArea } from '../ui/scroll-area';
-import { ReactNode, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import classNames from 'classnames';
 import { Market } from '@/types';
-import { useStore } from '@/store';
+import { useMarketStore } from '@/store';
 import { formatPrice } from '@/lib/utils';
-
-interface Asset {
-  key: string;
-  value: string;
-}
-
-interface AssetProps {
-  children?: ReactNode | ReactNode[];
-  asset: Asset;
-  path: string;
-  onClick?: (asset: Asset) => void;
-}
-
-const Asset = (props: AssetProps) => {
-  return (
-    <div onClick={() => props.onClick && props.onClick(props.asset)} className="flex">
-      <div className="mr-2 p-2 flex items-center w-16 h-full">
-        <img
-          src={`/coins/${props.path}.svg`}
-          alt={props.path}
-          className="p-[1px] rounded-full w-16 border-2 border-foreground"
-        />
-      </div>
-      <div className="flex items-center text-xl font-bold">
-        {props.asset.value}
-        {props.children}
-      </div>
-    </div>
-  );
-};
+import { Asset } from '../Asset';
+import { TradingViewChart } from '../TradingView';
 
 const assets = [
+  {
+    key: 'iota',
+    value: 'IOTA',
+    market: Market.IOTAUSD,
+  },
   {
     key: 'eth',
     value: 'ETH',
@@ -70,11 +47,6 @@ const assets = [
     key: 'ltc',
     value: 'LTC',
     market: Market.LTCUSD,
-  },
-  {
-    key: 'iota',
-    value: 'IOTA',
-    market: Market.IOTAUSD,
   },
   {
     key: 'avax',
@@ -94,7 +66,7 @@ const assets = [
 ];
 
 const TriggerButton = () => {
-  const { marketsState, setCurrentMarket } = useStore();
+  const { marketsState, setCurrentMarket } = useMarketStore();
   const [selectedAsset, setSelectedAsset] = useState<{
     key: string;
     value: string;
@@ -104,9 +76,9 @@ const TriggerButton = () => {
   // TODO: this should be dispatched to the global store, so other
   // components can consume the current price of current asset.
   const [chosenAsset, setChosenAsset] = useState<{ key: string; value: string; market: Market }>({
-    key: 'eth',
-    value: 'ETH',
-    market: Market.ETHUSD,
+    key: 'iota',
+    value: 'IOTA',
+    market: Market.IOTAUSD,
   });
 
   const assetPrice = marketsState[chosenAsset.market]?.currentPrice;
@@ -156,10 +128,18 @@ const TriggerButton = () => {
           </DrawerFooter>
         </DrawerContent>
       </Drawer>
-      <div className="flex flex-col items-center justify-center">
-        <p className="text-lg">{assetPrice ? formatPrice(assetPrice) : '$ ...'}</p>
-        <p className="text-xxs underline">observe in graph</p>
-      </div>
+      <Drawer>
+        <DrawerTrigger>
+          <div className="flex flex-col items-center justify-center">
+            <p className="text-lg">{assetPrice ? formatPrice(assetPrice) : '$ ...'}</p>
+            <p className="text-xxs underline">observe in graph</p>
+          </div>
+        </DrawerTrigger>
+        <DrawerContent className="h-[80%]">
+          <DrawerHeader className="p-2" />
+          <TradingViewChart />
+        </DrawerContent>
+      </Drawer>
     </div>
   );
 };

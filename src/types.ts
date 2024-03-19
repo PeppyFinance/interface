@@ -1,10 +1,10 @@
 import { config } from './lib/wagmiConfig';
 
 export enum Market {
+  IOTAUSD = 'IOTAUSD',
   BTCUSD = 'BTCUSD',
   ETHUSD = 'ETHUSD',
   LTCUSD = 'LTCUSD',
-  IOTAUSD = 'IOTAUSD',
   AVAXUSD = 'AVAXUSD',
   DOGEUSD = 'DOGEUSD',
   SHIBUSD = 'SHIBUSD',
