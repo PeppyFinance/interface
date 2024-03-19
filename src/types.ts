@@ -4,10 +4,10 @@ export enum Market {
   IOTAUSD = 'IOTAUSD',
   BTCUSD = 'BTCUSD',
   ETHUSD = 'ETHUSD',
-  LTCUSD = 'LTCUSD',
-  AVAXUSD = 'AVAXUSD',
-  DOGEUSD = 'DOGEUSD',
-  SHIBUSD = 'SHIBUSD',
+  // LTCUSD = 'LTCUSD',
+  // AVAXUSD = 'AVAXUSD',
+  // DOGEUSD = 'DOGEUSD',
+  // SHIBUSD = 'SHIBUSD',
 }
 
 declare module 'wagmi' {

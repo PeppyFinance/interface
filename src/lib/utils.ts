@@ -1,5 +1,12 @@
+import { Market } from '@/types';
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import { Address } from 'viem';
+import {
+  tradePairBtcUsdAddress,
+  tradePairEthUsdAddress,
+  tradePairIotaUsdAddress,
+} from './addresses';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -35,4 +42,14 @@ export function formatPrice(price: number): string {
     minimumFractionDigits: 2,
     maximumFractionDigits: 99,
   }).format(Number(formatDynamicPrecisionPrice(price)));
+}
+
+export function mapMarketToTradePairAddress(market: Market): Address {
+  const _map: Record<Market, Address> = {
+    [Market.BTCUSD]: tradePairBtcUsdAddress,
+    [Market.ETHUSD]: tradePairEthUsdAddress,
+    [Market.IOTAUSD]: tradePairIotaUsdAddress,
+  };
+
+  return _map[market];
 }

@@ -2,11 +2,11 @@ import { createClient as createWSClient } from 'graphql-ws';
 import { Client, cacheExchange, fetchExchange, subscriptionExchange } from 'urql';
 
 const wsClient = createWSClient({
-  url: 'ws://localhost:8080/v1/graphql',
+  url: 'wss://indexer.bigdevenergy.link/90bf99a/v1/graphql',
 });
 
 export const graphqlClient = new Client({
-  url: 'http://localhost:8080/v1/graphql',
+  url: 'wss://indexer.bigdevenergy.link/90bf99a/v1/graphql',
   exchanges: [
     cacheExchange,
     fetchExchange,

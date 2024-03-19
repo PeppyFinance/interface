@@ -21,213 +21,6 @@ export type Scalars = {
   timestamp: { input: any; output: any; }
 };
 
-/** columns and relationships of "Account" */
-export type Account = {
-  __typename?: 'Account';
-  /** An array relationship */
-  approvals: Array<Approval>;
-  balance: Scalars['numeric']['output'];
-  db_write_timestamp?: Maybe<Scalars['timestamp']['output']>;
-  id: Scalars['String']['output'];
-};
-
-
-/** columns and relationships of "Account" */
-export type AccountApprovalsArgs = {
-  distinct_on?: InputMaybe<Array<Approval_Select_Column>>;
-  limit?: InputMaybe<Scalars['Int']['input']>;
-  offset?: InputMaybe<Scalars['Int']['input']>;
-  order_by?: InputMaybe<Array<Approval_Order_By>>;
-  where?: InputMaybe<Approval_Bool_Exp>;
-};
-
-/** Boolean expression to filter rows from the table "Account". All fields are combined with a logical 'AND'. */
-export type Account_Bool_Exp = {
-  _and?: InputMaybe<Array<Account_Bool_Exp>>;
-  _not?: InputMaybe<Account_Bool_Exp>;
-  _or?: InputMaybe<Array<Account_Bool_Exp>>;
-  approvals?: InputMaybe<Approval_Bool_Exp>;
-  balance?: InputMaybe<Numeric_Comparison_Exp>;
-  db_write_timestamp?: InputMaybe<Timestamp_Comparison_Exp>;
-  id?: InputMaybe<String_Comparison_Exp>;
-};
-
-/** Ordering options when selecting data from "Account". */
-export type Account_Order_By = {
-  approvals_aggregate?: InputMaybe<Approval_Aggregate_Order_By>;
-  balance?: InputMaybe<Order_By>;
-  db_write_timestamp?: InputMaybe<Order_By>;
-  id?: InputMaybe<Order_By>;
-};
-
-/** select columns of table "Account" */
-export enum Account_Select_Column {
-  /** column name */
-  Balance = 'balance',
-  /** column name */
-  DbWriteTimestamp = 'db_write_timestamp',
-  /** column name */
-  Id = 'id'
-}
-
-/** Streaming cursor of the table "Account" */
-export type Account_Stream_Cursor_Input = {
-  /** Stream column input with initial value */
-  initial_value: Account_Stream_Cursor_Value_Input;
-  /** cursor ordering */
-  ordering?: InputMaybe<Cursor_Ordering>;
-};
-
-/** Initial value of the column from where the streaming should start */
-export type Account_Stream_Cursor_Value_Input = {
-  balance?: InputMaybe<Scalars['numeric']['input']>;
-  db_write_timestamp?: InputMaybe<Scalars['timestamp']['input']>;
-  id?: InputMaybe<Scalars['String']['input']>;
-};
-
-/** columns and relationships of "Approval" */
-export type Approval = {
-  __typename?: 'Approval';
-  amount: Scalars['numeric']['output'];
-  db_write_timestamp?: Maybe<Scalars['timestamp']['output']>;
-  id: Scalars['String']['output'];
-  /** An object relationship */
-  owner?: Maybe<Account>;
-  owner_id: Scalars['String']['output'];
-  /** An object relationship */
-  spender?: Maybe<Account>;
-  spender_id: Scalars['String']['output'];
-};
-
-/** order by aggregate values of table "Approval" */
-export type Approval_Aggregate_Order_By = {
-  avg?: InputMaybe<Approval_Avg_Order_By>;
-  count?: InputMaybe<Order_By>;
-  max?: InputMaybe<Approval_Max_Order_By>;
-  min?: InputMaybe<Approval_Min_Order_By>;
-  stddev?: InputMaybe<Approval_Stddev_Order_By>;
-  stddev_pop?: InputMaybe<Approval_Stddev_Pop_Order_By>;
-  stddev_samp?: InputMaybe<Approval_Stddev_Samp_Order_By>;
-  sum?: InputMaybe<Approval_Sum_Order_By>;
-  var_pop?: InputMaybe<Approval_Var_Pop_Order_By>;
-  var_samp?: InputMaybe<Approval_Var_Samp_Order_By>;
-  variance?: InputMaybe<Approval_Variance_Order_By>;
-};
-
-/** order by avg() on columns of table "Approval" */
-export type Approval_Avg_Order_By = {
-  amount?: InputMaybe<Order_By>;
-};
-
-/** Boolean expression to filter rows from the table "Approval". All fields are combined with a logical 'AND'. */
-export type Approval_Bool_Exp = {
-  _and?: InputMaybe<Array<Approval_Bool_Exp>>;
-  _not?: InputMaybe<Approval_Bool_Exp>;
-  _or?: InputMaybe<Array<Approval_Bool_Exp>>;
-  amount?: InputMaybe<Numeric_Comparison_Exp>;
-  db_write_timestamp?: InputMaybe<Timestamp_Comparison_Exp>;
-  id?: InputMaybe<String_Comparison_Exp>;
-  owner?: InputMaybe<Account_Bool_Exp>;
-  owner_id?: InputMaybe<String_Comparison_Exp>;
-  spender?: InputMaybe<Account_Bool_Exp>;
-  spender_id?: InputMaybe<String_Comparison_Exp>;
-};
-
-/** order by max() on columns of table "Approval" */
-export type Approval_Max_Order_By = {
-  amount?: InputMaybe<Order_By>;
-  db_write_timestamp?: InputMaybe<Order_By>;
-  id?: InputMaybe<Order_By>;
-  owner_id?: InputMaybe<Order_By>;
-  spender_id?: InputMaybe<Order_By>;
-};
-
-/** order by min() on columns of table "Approval" */
-export type Approval_Min_Order_By = {
-  amount?: InputMaybe<Order_By>;
-  db_write_timestamp?: InputMaybe<Order_By>;
-  id?: InputMaybe<Order_By>;
-  owner_id?: InputMaybe<Order_By>;
-  spender_id?: InputMaybe<Order_By>;
-};
-
-/** Ordering options when selecting data from "Approval". */
-export type Approval_Order_By = {
-  amount?: InputMaybe<Order_By>;
-  db_write_timestamp?: InputMaybe<Order_By>;
-  id?: InputMaybe<Order_By>;
-  owner?: InputMaybe<Account_Order_By>;
-  owner_id?: InputMaybe<Order_By>;
-  spender?: InputMaybe<Account_Order_By>;
-  spender_id?: InputMaybe<Order_By>;
-};
-
-/** select columns of table "Approval" */
-export enum Approval_Select_Column {
-  /** column name */
-  Amount = 'amount',
-  /** column name */
-  DbWriteTimestamp = 'db_write_timestamp',
-  /** column name */
-  Id = 'id',
-  /** column name */
-  OwnerId = 'owner_id',
-  /** column name */
-  SpenderId = 'spender_id'
-}
-
-/** order by stddev() on columns of table "Approval" */
-export type Approval_Stddev_Order_By = {
-  amount?: InputMaybe<Order_By>;
-};
-
-/** order by stddev_pop() on columns of table "Approval" */
-export type Approval_Stddev_Pop_Order_By = {
-  amount?: InputMaybe<Order_By>;
-};
-
-/** order by stddev_samp() on columns of table "Approval" */
-export type Approval_Stddev_Samp_Order_By = {
-  amount?: InputMaybe<Order_By>;
-};
-
-/** Streaming cursor of the table "Approval" */
-export type Approval_Stream_Cursor_Input = {
-  /** Stream column input with initial value */
-  initial_value: Approval_Stream_Cursor_Value_Input;
-  /** cursor ordering */
-  ordering?: InputMaybe<Cursor_Ordering>;
-};
-
-/** Initial value of the column from where the streaming should start */
-export type Approval_Stream_Cursor_Value_Input = {
-  amount?: InputMaybe<Scalars['numeric']['input']>;
-  db_write_timestamp?: InputMaybe<Scalars['timestamp']['input']>;
-  id?: InputMaybe<Scalars['String']['input']>;
-  owner_id?: InputMaybe<Scalars['String']['input']>;
-  spender_id?: InputMaybe<Scalars['String']['input']>;
-};
-
-/** order by sum() on columns of table "Approval" */
-export type Approval_Sum_Order_By = {
-  amount?: InputMaybe<Order_By>;
-};
-
-/** order by var_pop() on columns of table "Approval" */
-export type Approval_Var_Pop_Order_By = {
-  amount?: InputMaybe<Order_By>;
-};
-
-/** order by var_samp() on columns of table "Approval" */
-export type Approval_Var_Samp_Order_By = {
-  amount?: InputMaybe<Order_By>;
-};
-
-/** order by variance() on columns of table "Approval" */
-export type Approval_Variance_Order_By = {
-  amount?: InputMaybe<Order_By>;
-};
-
 /** Boolean expression to compare columns of type "Boolean". All fields are combined with logical 'AND'. */
 export type Boolean_Comparison_Exp = {
   _eq?: InputMaybe<Scalars['Boolean']['input']>;
@@ -278,6 +71,9 @@ export type Position = {
   owner_id: Scalars['String']['output'];
   pnl?: Maybe<Scalars['numeric']['output']>;
   totalPnL?: Maybe<Scalars['numeric']['output']>;
+  /** An object relationship */
+  tradePair?: Maybe<TradePair>;
+  tradePair_id: Scalars['String']['output'];
 };
 
 /** order by aggregate values of table "Position" */
@@ -339,6 +135,8 @@ export type Position_Bool_Exp = {
   owner_id?: InputMaybe<String_Comparison_Exp>;
   pnl?: InputMaybe<Numeric_Comparison_Exp>;
   totalPnL?: InputMaybe<Numeric_Comparison_Exp>;
+  tradePair?: InputMaybe<TradePair_Bool_Exp>;
+  tradePair_id?: InputMaybe<String_Comparison_Exp>;
 };
 
 /** order by max() on columns of table "Position" */
@@ -361,6 +159,7 @@ export type Position_Max_Order_By = {
   owner_id?: InputMaybe<Order_By>;
   pnl?: InputMaybe<Order_By>;
   totalPnL?: InputMaybe<Order_By>;
+  tradePair_id?: InputMaybe<Order_By>;
 };
 
 /** order by min() on columns of table "Position" */
@@ -383,6 +182,7 @@ export type Position_Min_Order_By = {
   owner_id?: InputMaybe<Order_By>;
   pnl?: InputMaybe<Order_By>;
   totalPnL?: InputMaybe<Order_By>;
+  tradePair_id?: InputMaybe<Order_By>;
 };
 
 /** Ordering options when selecting data from "Position". */
@@ -407,6 +207,8 @@ export type Position_Order_By = {
   owner_id?: InputMaybe<Order_By>;
   pnl?: InputMaybe<Order_By>;
   totalPnL?: InputMaybe<Order_By>;
+  tradePair?: InputMaybe<TradePair_Order_By>;
+  tradePair_id?: InputMaybe<Order_By>;
 };
 
 /** select columns of table "Position" */
@@ -448,7 +250,9 @@ export enum Position_Select_Column {
   /** column name */
   Pnl = 'pnl',
   /** column name */
-  TotalPnL = 'totalPnL'
+  TotalPnL = 'totalPnL',
+  /** column name */
+  TradePairId = 'tradePair_id'
 }
 
 /** order by stddev() on columns of table "Position" */
@@ -537,6 +341,7 @@ export type Position_Stream_Cursor_Value_Input = {
   owner_id?: InputMaybe<Scalars['String']['input']>;
   pnl?: InputMaybe<Scalars['numeric']['input']>;
   totalPnL?: InputMaybe<Scalars['numeric']['input']>;
+  tradePair_id?: InputMaybe<Scalars['String']['input']>;
 };
 
 /** order by sum() on columns of table "Position" */
@@ -646,6 +451,100 @@ export type String_Comparison_Exp = {
   _regex?: InputMaybe<Scalars['String']['input']>;
   /** does the column match the given SQL regular expression */
   _similar?: InputMaybe<Scalars['String']['input']>;
+};
+
+/** columns and relationships of "TradePair" */
+export type TradePair = {
+  __typename?: 'TradePair';
+  assetDecimals: Scalars['numeric']['output'];
+  collateralDecimals: Scalars['numeric']['output'];
+  collateralToken: Scalars['String']['output'];
+  db_write_timestamp?: Maybe<Scalars['timestamp']['output']>;
+  id: Scalars['String']['output'];
+  name: Scalars['String']['output'];
+  /** An array relationship */
+  positions: Array<Position>;
+  pyth: Scalars['String']['output'];
+  pythId: Scalars['String']['output'];
+};
+
+
+/** columns and relationships of "TradePair" */
+export type TradePairPositionsArgs = {
+  distinct_on?: InputMaybe<Array<Position_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Position_Order_By>>;
+  where?: InputMaybe<Position_Bool_Exp>;
+};
+
+/** Boolean expression to filter rows from the table "TradePair". All fields are combined with a logical 'AND'. */
+export type TradePair_Bool_Exp = {
+  _and?: InputMaybe<Array<TradePair_Bool_Exp>>;
+  _not?: InputMaybe<TradePair_Bool_Exp>;
+  _or?: InputMaybe<Array<TradePair_Bool_Exp>>;
+  assetDecimals?: InputMaybe<Numeric_Comparison_Exp>;
+  collateralDecimals?: InputMaybe<Numeric_Comparison_Exp>;
+  collateralToken?: InputMaybe<String_Comparison_Exp>;
+  db_write_timestamp?: InputMaybe<Timestamp_Comparison_Exp>;
+  id?: InputMaybe<String_Comparison_Exp>;
+  name?: InputMaybe<String_Comparison_Exp>;
+  positions?: InputMaybe<Position_Bool_Exp>;
+  pyth?: InputMaybe<String_Comparison_Exp>;
+  pythId?: InputMaybe<String_Comparison_Exp>;
+};
+
+/** Ordering options when selecting data from "TradePair". */
+export type TradePair_Order_By = {
+  assetDecimals?: InputMaybe<Order_By>;
+  collateralDecimals?: InputMaybe<Order_By>;
+  collateralToken?: InputMaybe<Order_By>;
+  db_write_timestamp?: InputMaybe<Order_By>;
+  id?: InputMaybe<Order_By>;
+  name?: InputMaybe<Order_By>;
+  positions_aggregate?: InputMaybe<Position_Aggregate_Order_By>;
+  pyth?: InputMaybe<Order_By>;
+  pythId?: InputMaybe<Order_By>;
+};
+
+/** select columns of table "TradePair" */
+export enum TradePair_Select_Column {
+  /** column name */
+  AssetDecimals = 'assetDecimals',
+  /** column name */
+  CollateralDecimals = 'collateralDecimals',
+  /** column name */
+  CollateralToken = 'collateralToken',
+  /** column name */
+  DbWriteTimestamp = 'db_write_timestamp',
+  /** column name */
+  Id = 'id',
+  /** column name */
+  Name = 'name',
+  /** column name */
+  Pyth = 'pyth',
+  /** column name */
+  PythId = 'pythId'
+}
+
+/** Streaming cursor of the table "TradePair" */
+export type TradePair_Stream_Cursor_Input = {
+  /** Stream column input with initial value */
+  initial_value: TradePair_Stream_Cursor_Value_Input;
+  /** cursor ordering */
+  ordering?: InputMaybe<Cursor_Ordering>;
+};
+
+/** Initial value of the column from where the streaming should start */
+export type TradePair_Stream_Cursor_Value_Input = {
+  assetDecimals?: InputMaybe<Scalars['numeric']['input']>;
+  collateralDecimals?: InputMaybe<Scalars['numeric']['input']>;
+  collateralToken?: InputMaybe<Scalars['String']['input']>;
+  db_write_timestamp?: InputMaybe<Scalars['timestamp']['input']>;
+  id?: InputMaybe<Scalars['String']['input']>;
+  name?: InputMaybe<Scalars['String']['input']>;
+  pyth?: InputMaybe<Scalars['String']['input']>;
+  pythId?: InputMaybe<Scalars['String']['input']>;
 };
 
 /** columns and relationships of "User" */
@@ -1044,18 +943,14 @@ export type Persisted_State_Stream_Cursor_Value_Input = {
 
 export type Query_Root = {
   __typename?: 'query_root';
-  /** fetch data from the table: "Account" */
-  Account: Array<Account>;
-  /** fetch data from the table: "Account" using primary key columns */
-  Account_by_pk?: Maybe<Account>;
-  /** fetch data from the table: "Approval" */
-  Approval: Array<Approval>;
-  /** fetch data from the table: "Approval" using primary key columns */
-  Approval_by_pk?: Maybe<Approval>;
   /** fetch data from the table: "Position" */
   Position: Array<Position>;
   /** fetch data from the table: "Position" using primary key columns */
   Position_by_pk?: Maybe<Position>;
+  /** fetch data from the table: "TradePair" */
+  TradePair: Array<TradePair>;
+  /** fetch data from the table: "TradePair" using primary key columns */
+  TradePair_by_pk?: Maybe<TradePair>;
   /** fetch data from the table: "User" */
   User: Array<User>;
   /** fetch data from the table: "User" using primary key columns */
@@ -1083,34 +978,6 @@ export type Query_Root = {
 };
 
 
-export type Query_RootAccountArgs = {
-  distinct_on?: InputMaybe<Array<Account_Select_Column>>;
-  limit?: InputMaybe<Scalars['Int']['input']>;
-  offset?: InputMaybe<Scalars['Int']['input']>;
-  order_by?: InputMaybe<Array<Account_Order_By>>;
-  where?: InputMaybe<Account_Bool_Exp>;
-};
-
-
-export type Query_RootAccount_By_PkArgs = {
-  id: Scalars['String']['input'];
-};
-
-
-export type Query_RootApprovalArgs = {
-  distinct_on?: InputMaybe<Array<Approval_Select_Column>>;
-  limit?: InputMaybe<Scalars['Int']['input']>;
-  offset?: InputMaybe<Scalars['Int']['input']>;
-  order_by?: InputMaybe<Array<Approval_Order_By>>;
-  where?: InputMaybe<Approval_Bool_Exp>;
-};
-
-
-export type Query_RootApproval_By_PkArgs = {
-  id: Scalars['String']['input'];
-};
-
-
 export type Query_RootPositionArgs = {
   distinct_on?: InputMaybe<Array<Position_Select_Column>>;
   limit?: InputMaybe<Scalars['Int']['input']>;
@@ -1121,6 +988,20 @@ export type Query_RootPositionArgs = {
 
 
 export type Query_RootPosition_By_PkArgs = {
+  id: Scalars['String']['input'];
+};
+
+
+export type Query_RootTradePairArgs = {
+  distinct_on?: InputMaybe<Array<TradePair_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<TradePair_Order_By>>;
+  where?: InputMaybe<TradePair_Bool_Exp>;
+};
+
+
+export type Query_RootTradePair_By_PkArgs = {
   id: Scalars['String']['input'];
 };
 
@@ -1322,24 +1203,18 @@ export type Raw_Events_Stream_Cursor_Value_Input = {
 
 export type Subscription_Root = {
   __typename?: 'subscription_root';
-  /** fetch data from the table: "Account" */
-  Account: Array<Account>;
-  /** fetch data from the table: "Account" using primary key columns */
-  Account_by_pk?: Maybe<Account>;
-  /** fetch data from the table in a streaming manner: "Account" */
-  Account_stream: Array<Account>;
-  /** fetch data from the table: "Approval" */
-  Approval: Array<Approval>;
-  /** fetch data from the table: "Approval" using primary key columns */
-  Approval_by_pk?: Maybe<Approval>;
-  /** fetch data from the table in a streaming manner: "Approval" */
-  Approval_stream: Array<Approval>;
   /** fetch data from the table: "Position" */
   Position: Array<Position>;
   /** fetch data from the table: "Position" using primary key columns */
   Position_by_pk?: Maybe<Position>;
   /** fetch data from the table in a streaming manner: "Position" */
   Position_stream: Array<Position>;
+  /** fetch data from the table: "TradePair" */
+  TradePair: Array<TradePair>;
+  /** fetch data from the table: "TradePair" using primary key columns */
+  TradePair_by_pk?: Maybe<TradePair>;
+  /** fetch data from the table in a streaming manner: "TradePair" */
+  TradePair_stream: Array<TradePair>;
   /** fetch data from the table: "User" */
   User: Array<User>;
   /** fetch data from the table: "User" using primary key columns */
@@ -1379,48 +1254,6 @@ export type Subscription_Root = {
 };
 
 
-export type Subscription_RootAccountArgs = {
-  distinct_on?: InputMaybe<Array<Account_Select_Column>>;
-  limit?: InputMaybe<Scalars['Int']['input']>;
-  offset?: InputMaybe<Scalars['Int']['input']>;
-  order_by?: InputMaybe<Array<Account_Order_By>>;
-  where?: InputMaybe<Account_Bool_Exp>;
-};
-
-
-export type Subscription_RootAccount_By_PkArgs = {
-  id: Scalars['String']['input'];
-};
-
-
-export type Subscription_RootAccount_StreamArgs = {
-  batch_size: Scalars['Int']['input'];
-  cursor: Array<InputMaybe<Account_Stream_Cursor_Input>>;
-  where?: InputMaybe<Account_Bool_Exp>;
-};
-
-
-export type Subscription_RootApprovalArgs = {
-  distinct_on?: InputMaybe<Array<Approval_Select_Column>>;
-  limit?: InputMaybe<Scalars['Int']['input']>;
-  offset?: InputMaybe<Scalars['Int']['input']>;
-  order_by?: InputMaybe<Array<Approval_Order_By>>;
-  where?: InputMaybe<Approval_Bool_Exp>;
-};
-
-
-export type Subscription_RootApproval_By_PkArgs = {
-  id: Scalars['String']['input'];
-};
-
-
-export type Subscription_RootApproval_StreamArgs = {
-  batch_size: Scalars['Int']['input'];
-  cursor: Array<InputMaybe<Approval_Stream_Cursor_Input>>;
-  where?: InputMaybe<Approval_Bool_Exp>;
-};
-
-
 export type Subscription_RootPositionArgs = {
   distinct_on?: InputMaybe<Array<Position_Select_Column>>;
   limit?: InputMaybe<Scalars['Int']['input']>;
@@ -1439,6 +1272,27 @@ export type Subscription_RootPosition_StreamArgs = {
   batch_size: Scalars['Int']['input'];
   cursor: Array<InputMaybe<Position_Stream_Cursor_Input>>;
   where?: InputMaybe<Position_Bool_Exp>;
+};
+
+
+export type Subscription_RootTradePairArgs = {
+  distinct_on?: InputMaybe<Array<TradePair_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<TradePair_Order_By>>;
+  where?: InputMaybe<TradePair_Bool_Exp>;
+};
+
+
+export type Subscription_RootTradePair_By_PkArgs = {
+  id: Scalars['String']['input'];
+};
+
+
+export type Subscription_RootTradePair_StreamArgs = {
+  batch_size: Scalars['Int']['input'];
+  cursor: Array<InputMaybe<TradePair_Stream_Cursor_Input>>;
+  where?: InputMaybe<TradePair_Bool_Exp>;
 };
 
 

@@ -5,12 +5,12 @@ import { ScrollArea } from '../ui/scroll-area';
 import classNames from 'classnames';
 import { graphql } from '@/graphql';
 import { useMarketStore } from '@/store';
-import { tradePairAddress } from '@/lib/addresses';
 import { Hex, encodeAbiParameters, formatEther } from 'viem';
 import { connection } from '@/lib/pyth';
 import * as tradePairAbi from '@/abi/TradePair.json';
 import { Button } from '../ui/button';
-import { formatDynamicPrecisionPrice } from '@/lib/utils';
+import { formatDynamicPrecisionPrice, mapMarketToTradePairAddress } from '@/lib/utils';
+import { useMemo } from 'react';
 
 function formatUSD(value: bigint): string {
   return (
@@ -46,6 +46,11 @@ const Position = ({ id, size, collateral, entryPrice, isLong }: PositionProps) =
   const { writeContract } = useWriteContract();
   const block = useBlock();
   const { marketsState, currentMarket } = useMarketStore();
+
+  const tradePairAddress = useMemo(
+    () => mapMarketToTradePairAddress(currentMarket),
+    [currentMarket]
+  );
 
   const handleClose = async () => {
     const currentMarketState = marketsState[currentMarket];

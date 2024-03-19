@@ -6,12 +6,18 @@ import { Slider } from '@/components/ui/slider';
 import { InfoCircledIcon } from '@radix-ui/react-icons';
 import { useEffect, useMemo, useState } from 'react';
 import { useMaskito } from '@maskito/react';
-import { collateralTokenAddress, tradePairAddress } from '@/lib/addresses';
-import { useAccount, useReadContract, useWriteContract, useBlock } from 'wagmi';
+import { collateralTokenAddress } from '@/lib/addresses';
+import {
+  useAccount,
+  useReadContract,
+  useWriteContract,
+  useBlock,
+  useWaitForTransactionReceipt,
+} from 'wagmi';
 import { erc20Abi, parseEther, formatEther, encodeAbiParameters, Hex } from 'viem';
 import * as tradePairAbi from '@/abi/TradePair.json';
 import { connection, subscribeToPriceFeeds, unsubscribeToPriceFeeds } from '@/lib/pyth';
-import { formatPrice } from '@/lib/utils';
+import { formatPrice, mapMarketToTradePairAddress } from '@/lib/utils';
 import { useMarketStore } from '@/store';
 import { DollarMask } from '@/lib/masks';
 
@@ -26,9 +32,19 @@ function formatPositionSize(positionSize: bigint): string {
 export const Exchange = () => {
   const { marketsState, currentMarket } = useMarketStore();
   const { address, status } = useAccount();
-  const { writeContract: writeContractOpenPosition, status: statusOpenPosition } =
-    useWriteContract();
-  const { writeContract: writeContractApprove, status: statusApprove } = useWriteContract();
+
+  const { writeContract: writeContractOpenPosition, data: hashOpenPosition } = useWriteContract();
+  const { writeContract: writeContractApprove, data: hashApproval } = useWriteContract();
+
+  const { isLoading: isConfirmingOpenPosition, isSuccess: openPositionConfirmed } =
+    useWaitForTransactionReceipt({
+      hash: hashOpenPosition,
+    });
+  const { isLoading: isConfirmingApproval, isSuccess: approvalConfirmed } =
+    useWaitForTransactionReceipt({
+      hash: hashApproval,
+    });
+
   const maskedInputRef = useMaskito({ options: DollarMask });
 
   const [collateral, setCollateral] = useState<string>('$ 0');
@@ -36,6 +52,11 @@ export const Exchange = () => {
   const [direction, setDirection] = useState<1 | -1>(1);
 
   const block = useBlock();
+
+  const tradePairAddress = useMemo(
+    () => mapMarketToTradePairAddress(currentMarket),
+    [currentMarket]
+  );
 
   const parsedCollateral = useMemo(
     () => parseEther(String(parseCollateral(collateral))),
@@ -45,6 +66,17 @@ export const Exchange = () => {
     () => parsedCollateral * BigInt(leverage),
     [parsedCollateral, leverage]
   );
+
+  // useEffect(() => {
+  //   writeContract({
+  //     address: collateralTokenAddress,
+  //     abi: parseAbi(['function mint(uint256 _amount)']),
+  //     functionName: 'mint',
+  //     args: [parseEther('1000000')],
+  //   });
+  // }, []);
+  //
+  // console.log(error);
 
   const { data: balance, refetch: refetchBalance } = useReadContract({
     address: collateralTokenAddress,
@@ -201,9 +233,7 @@ export const Exchange = () => {
         address: tradePairAddress,
         abi: tradePairAbi.abi,
         functionName: 'openPosition',
-        // TODO: place price data in here
         args: [parsedCollateral, leverage * 1_000_000, direction, priceFeedUpdateData],
-        value: 1n,
       });
     }
   };
@@ -225,17 +255,17 @@ export const Exchange = () => {
   }, []);
 
   useEffect(() => {
-    if (statusOpenPosition === 'success') {
+    if (openPositionConfirmed) {
       refetchBalance();
       refetchAllowance();
     }
-  }, [statusOpenPosition]);
+  }, [openPositionConfirmed]);
 
   useEffect(() => {
-    if (statusApprove === 'success') {
+    if (approvalConfirmed) {
       refetchAllowance();
     }
-  }, [statusApprove]);
+  }, [approvalConfirmed]);
 
   return (
     <div className="px-3 flex flex-col">
@@ -351,7 +381,7 @@ export const Exchange = () => {
           </CardContent>
           <CardFooter>
             <Button
-              disabled={!hasEnoughBalance || !hasSufficientSize || status !== 'connected'}
+              // disabled={!hasEnoughBalance || !hasSufficientSize || status !== 'connected'}
               className="w-full mr-2"
               fontWeight="heavy"
               size="lg"

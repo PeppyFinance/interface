@@ -2,7 +2,7 @@ import { createWeb3Modal } from '@web3modal/wagmi/react';
 import { defaultWagmiConfig } from '@web3modal/wagmi/react/config';
 
 import { http } from 'wagmi';
-import { foundry } from 'wagmi/chains';
+import { foundry, shimmer, shimmerTestnet } from 'wagmi/chains';
 
 const projectId = '0469e6137f22c487ae982990c50111c5';
 
@@ -14,12 +14,12 @@ const metadata = {
   icons: ['https://avatars.githubusercontent.com/u/37784886'],
 };
 
-const chains = [foundry] as const;
+const chains = [shimmerTestnet] as const;
 export const config = defaultWagmiConfig({
   chains, // required
   projectId, // required
   transports: {
-    [foundry.id]: http(),
+    [shimmerTestnet.id]: http(),
   },
   metadata, // required
   enableWalletConnect: true, // Optional - true by default
@@ -33,4 +33,7 @@ createWeb3Modal({
   wagmiConfig: config,
   projectId,
   enableAnalytics: true, // Optional - defaults to your Cloud configuration
+  themeVariables: {
+    '--w3m-accent': 'hsl(var(--primary))',
+  },
 });
