@@ -51,18 +51,27 @@ export const Pool = () => {
     status: statusAllowance,
   } = useWriteContract();
 
-  const { isLoading: isConfirmingDeposit, isSuccess: depositConfirmed } =
-    useWaitForTransactionReceipt({
-      hash: hashDeposit,
-    });
-  const { isLoading: isConfirmingRedeem, isSuccess: redemptionConfirmed } =
-    useWaitForTransactionReceipt({
-      hash: hashRedeem,
-    });
-  const { isLoading: isConfirmingAllowance, isSuccess: allowanceConfirmed } =
-    useWaitForTransactionReceipt({
-      hash: hashAllowance,
-    });
+  const {
+    isLoading: isConfirmingDeposit,
+    isSuccess: depositConfirmed,
+    isError: depositNotConfirmed,
+  } = useWaitForTransactionReceipt({
+    hash: hashDeposit,
+  });
+  const {
+    isLoading: isConfirmingRedeem,
+    isSuccess: redemptionConfirmed,
+    isError: redemptionNotConfirmed,
+  } = useWaitForTransactionReceipt({
+    hash: hashRedeem,
+  });
+  const {
+    isLoading: isConfirmingAllowance,
+    isSuccess: allowanceConfirmed,
+    isError: allowanceNotConfirmed,
+  } = useWaitForTransactionReceipt({
+    hash: hashAllowance,
+  });
 
   const dollarMaskedInputRef = useMaskito({ options: DollarMask });
   const lpMaskedInputRef = useMaskito({ options: LpMask });
@@ -279,9 +288,15 @@ export const Pool = () => {
       refetchTotalShares();
       setDepositAmount('$ 0');
 
-      toast.success('Deposit confirmed.');
+      toast.success('Deposit confirmed');
     }
   }, [depositConfirmed]);
+
+  useEffect(() => {
+    if (depositNotConfirmed) {
+      toast.error('Deposit not confirmed', { description: 'Something went wrong.' });
+    }
+  }, [depositNotConfirmed]);
 
   useEffect(() => {
     if (redemptionConfirmed) {
@@ -293,9 +308,15 @@ export const Pool = () => {
       refetchTotalShares();
       setRedemptionAmount('0 PLP');
 
-      toast.success('Redemption confirmed.');
+      toast.success('Redemption confirmed');
     }
   }, [redemptionConfirmed]);
+
+  useEffect(() => {
+    if (redemptionNotConfirmed) {
+      toast.error('Redemption not confirmed', { description: 'Something went wrong.' });
+    }
+  }, [redemptionNotConfirmed]);
 
   useEffect(() => {
     if (allowanceConfirmed) {
@@ -306,20 +327,32 @@ export const Pool = () => {
   }, [allowanceConfirmed]);
 
   useEffect(() => {
+    if (allowanceNotConfirmed) {
+      toast.error('Allowance not confirmed', { description: 'Something went wrong.' });
+    }
+  }, [allowanceNotConfirmed]);
+
+  useEffect(() => {
     if (statusAllowance === 'success') {
       toast.info('Increase Allowance', { description: 'Waiting for confirmation' });
+    } else if (statusAllowance === 'error') {
+      toast.error('Cannot increase allowance', { description: 'Something went wrong.' });
     }
   }, [statusAllowance]);
 
   useEffect(() => {
     if (statusDeposit === 'success') {
       toast.info('Deposit Liquidity', { description: 'Waiting for confirmation' });
+    } else if (statusDeposit === 'error') {
+      toast.error('Cannot deposit liquidity', { description: 'Something went wrong.' });
     }
   }, [statusDeposit]);
 
   useEffect(() => {
     if (statusRedeem === 'success') {
       toast.info('Redeem Liquidity', { description: 'Waiting for confirmation' });
+    } else if (statusRedeem === 'error') {
+      toast.error('Cannot redeem liquidity', { description: 'Something went wrong.' });
     }
   }, [statusRedeem]);
 
