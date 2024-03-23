@@ -18,6 +18,7 @@ import { InfoCircledIcon } from '@radix-ui/react-icons';
 import { erc20Abi } from 'viem';
 import { useWaitForTransactionReceipt } from 'wagmi';
 import { Spinner } from '@/components/ui/spinner';
+import { toast } from 'sonner';
 
 function parseUsdString(str: string): bigint {
   return BigInt(str.replaceAll('$', '').replaceAll(',', '').replaceAll(' ', '')) * BigInt(1e18);
@@ -277,6 +278,8 @@ export const Pool = () => {
       refetchOwnedShares();
       refetchTotalShares();
       setDepositAmount('$ 0');
+
+      toast.success('Deposit confirmed.');
     }
   }, [depositConfirmed]);
 
@@ -289,14 +292,36 @@ export const Pool = () => {
       refetchOwnedShares();
       refetchTotalShares();
       setRedemptionAmount('0 PLP');
+
+      toast.success('Redemption confirmed.');
     }
   }, [redemptionConfirmed]);
 
   useEffect(() => {
     if (allowanceConfirmed) {
       refetchAllowance();
+
+      toast.success('Allowance confirmed');
     }
   }, [allowanceConfirmed]);
+
+  useEffect(() => {
+    if (statusAllowance === 'success') {
+      toast.info('Increase Allowance', { description: 'Waiting for confirmation' });
+    }
+  }, [statusAllowance]);
+
+  useEffect(() => {
+    if (statusDeposit === 'success') {
+      toast.info('Deposit Liquidity', { description: 'Waiting for confirmation' });
+    }
+  }, [statusDeposit]);
+
+  useEffect(() => {
+    if (statusRedeem === 'success') {
+      toast.info('Redeem Liquidity', { description: 'Waiting for confirmation' });
+    }
+  }, [statusRedeem]);
 
   return (
     <div className="flex flex-col items-center">

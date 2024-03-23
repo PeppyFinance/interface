@@ -291,7 +291,7 @@ export const Exchange = () => {
   useEffect(() => {
     if (approvalConfirmed) {
       refetchAllowance();
-      toast.success('Approval confirmed.');
+      toast.success('Allowance confirmed.');
     }
   }, [approvalConfirmed]);
 
