@@ -21,6 +21,7 @@ import { formatPrice, mapMarketToTradePairAddress } from '@/lib/utils';
 import { useMarketStore } from '@/store';
 import { DollarMask } from '@/lib/masks';
 import { Spinner } from '@/components/ui/spinner';
+import { toast } from 'sonner';
 
 function parseCollateral(collateralString: string): bigint {
   return BigInt(collateralString.replaceAll('$', '').replaceAll(',', '').replaceAll(' ', ''));
@@ -283,14 +284,28 @@ export const Exchange = () => {
     if (openPositionConfirmed) {
       refetchBalance();
       refetchAllowance();
+      toast.success('Position confirmed');
     }
   }, [openPositionConfirmed]);
 
   useEffect(() => {
     if (approvalConfirmed) {
       refetchAllowance();
+      toast.success('Approval confirmed.');
     }
   }, [approvalConfirmed]);
+
+  useEffect(() => {
+    if (statusApproval === 'success') {
+      toast.info('Increase Allowance', { description: 'Waiting for confirmation.' });
+    }
+  }, [statusApproval]);
+
+  useEffect(() => {
+    if (statusOpenPosition === 'success') {
+      toast.info('Open Position', { description: 'Waiting for confirmation.' });
+    }
+  }, [statusOpenPosition]);
 
   return (
     <div className="px-3 flex flex-col">
