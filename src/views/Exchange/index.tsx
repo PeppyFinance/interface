@@ -20,6 +20,7 @@ import { connection, subscribeToPriceFeeds, unsubscribeToPriceFeeds } from '@/li
 import { formatPrice, mapMarketToTradePairAddress } from '@/lib/utils';
 import { useMarketStore } from '@/store';
 import { DollarMask } from '@/lib/masks';
+import { Spinner } from '@/components/ui/spinner';
 
 function parseCollateral(collateralString: string): bigint {
   return BigInt(collateralString.replaceAll('$', '').replaceAll(',', '').replaceAll(' ', ''));
@@ -31,10 +32,18 @@ function formatPositionSize(positionSize: bigint): string {
 
 export const Exchange = () => {
   const { marketsState, currentMarket } = useMarketStore();
-  const { address, status } = useAccount();
+  const { address, status: statusAccount } = useAccount();
 
-  const { writeContract: writeContractOpenPosition, data: hashOpenPosition } = useWriteContract();
-  const { writeContract: writeContractApprove, data: hashApproval } = useWriteContract();
+  const {
+    writeContract: writeContractOpenPosition,
+    data: hashOpenPosition,
+    status: statusOpenPosition,
+  } = useWriteContract();
+  const {
+    writeContract: writeContractApprove,
+    data: hashApproval,
+    status: statusApproval,
+  } = useWriteContract();
 
   const { isLoading: isConfirmingOpenPosition, isSuccess: openPositionConfirmed } =
     useWaitForTransactionReceipt({
@@ -106,7 +115,7 @@ export const Exchange = () => {
 
   const buttonText = useMemo(
     () =>
-      status !== 'connected'
+      statusAccount !== 'connected'
         ? 'Wallet not connected'
         : !hasSufficientSize
           ? 'Insufficient size'
@@ -116,6 +125,20 @@ export const Exchange = () => {
               ? 'Approve'
               : 'Open Position',
     [hasSufficientSize, hasEnoughBalance, hasEnoughAllowance, status]
+  );
+
+  const showSpinner = useMemo(
+    () =>
+      statusApproval === 'pending' ||
+      statusOpenPosition === 'pending' ||
+      isConfirmingApproval ||
+      isConfirmingOpenPosition,
+    [statusApproval, statusOpenPosition, isConfirmingApproval, isConfirmingOpenPosition]
+  );
+
+  const disableButton = useMemo(
+    () => !hasEnoughBalance || !hasSufficientSize || statusAccount !== 'connected' || showSpinner,
+    [hasEnoughBalance, hasSufficientSize, statusAccount, showSpinner]
   );
 
   const currentMarketState = marketsState[currentMarket];
@@ -381,13 +404,14 @@ export const Exchange = () => {
           </CardContent>
           <CardFooter>
             <Button
-              // disabled={!hasEnoughBalance || !hasSufficientSize || status !== 'connected'}
+              disabled={disableButton}
               className="w-full mr-2"
               fontWeight="heavy"
               size="lg"
               variant={direction === 1 ? 'constructive' : 'destructive'}
               onClick={handleOpenPosition}
             >
+              {showSpinner && <Spinner size="small" className="mr-2 text-foreground" />}
               {buttonText}
             </Button>
           </CardFooter>
