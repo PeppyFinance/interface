@@ -16,6 +16,8 @@ import { DollarMask, LpMask } from '@/lib/masks';
 import { useEffect, useMemo, useState } from 'react';
 import { InfoCircledIcon } from '@radix-ui/react-icons';
 import { erc20Abi } from 'viem';
+import { useWaitForTransactionReceipt } from 'wagmi';
+import { Spinner } from '@/components/ui/spinner';
 
 function parseUsdString(str: string): bigint {
   return BigInt(str.replaceAll('$', '').replaceAll(',', '').replaceAll(' ', '')) * BigInt(1e18);
@@ -26,14 +28,40 @@ function parseLpString(str: string): bigint {
 }
 
 export const Pool = () => {
-  const { address, status } = useAccount();
+  const { address, status: statusAccount } = useAccount();
   const [depositAmount, setDepositAmount] = useState<string>('$ 0');
   const [redemptionAmount, setRedemptionAmount] = useState<string>('0 PLP');
   const [isDepositDrawerOpen, setDepositDrawerOpen] = useState<boolean>(false);
   const [isRedeemDrawerOpen, setRedeemDrawerOpen] = useState<boolean>(false);
-  const { writeContract: writeContractDeposit, status: statusDeposit } = useWriteContract();
-  const { writeContract: writeContractRedeem, status: statusRedeem } = useWriteContract();
-  const { writeContract: writeContractAllowance, status: statusAllowance } = useWriteContract();
+
+  const {
+    writeContract: writeContractDeposit,
+    data: hashDeposit,
+    status: statusDeposit,
+  } = useWriteContract();
+  const {
+    writeContract: writeContractRedeem,
+    data: hashRedeem,
+    status: statusRedeem,
+  } = useWriteContract();
+  const {
+    writeContract: writeContractAllowance,
+    data: hashAllowance,
+    status: statusAllowance,
+  } = useWriteContract();
+
+  const { isLoading: isConfirmingDeposit, isSuccess: depositConfirmed } =
+    useWaitForTransactionReceipt({
+      hash: hashDeposit,
+    });
+  const { isLoading: isConfirmingRedeem, isSuccess: redemptionConfirmed } =
+    useWaitForTransactionReceipt({
+      hash: hashRedeem,
+    });
+  const { isLoading: isConfirmingAllowance, isSuccess: allowanceConfirmed } =
+    useWaitForTransactionReceipt({
+      hash: hashAllowance,
+    });
 
   const dollarMaskedInputRef = useMaskito({ options: DollarMask });
   const lpMaskedInputRef = useMaskito({ options: LpMask });
@@ -141,7 +169,7 @@ export const Pool = () => {
 
   const depositButtonText = useMemo(
     () =>
-      status !== 'connected'
+      statusAccount !== 'connected'
         ? 'Wallet not connected'
         : !hasSufficientBalance
           ? 'Not enough funds'
@@ -150,20 +178,60 @@ export const Pool = () => {
             : !hasSufficientDepositAmount
               ? 'Insufficient Amount'
               : 'Deposit',
-    [hasSufficientBalance, hasSufficientAllowance, hasSufficientDepositAmount, status]
+    [hasSufficientBalance, hasSufficientAllowance, hasSufficientDepositAmount, statusAccount]
   );
 
   const redeemButtonText = useMemo(
     () =>
-      status !== 'connected'
+      statusAccount !== 'connected'
         ? 'Wallet not connected'
         : !hasSufficientShares
           ? 'Not enough shares'
           : !hasSufficientRedemptionAmount
             ? 'Insufficient Amount'
             : 'Redeem',
-    [hasSufficientShares, hasSufficientRedemptionAmount, status]
+    [hasSufficientShares, hasSufficientRedemptionAmount, statusAccount]
   );
+
+  const showSpinner = useMemo(
+    () =>
+      statusAllowance === 'pending' ||
+      statusDeposit === 'pending' ||
+      statusRedeem === 'pending' ||
+      isConfirmingAllowance ||
+      isConfirmingRedeem ||
+      isConfirmingDeposit,
+    [
+      statusAllowance,
+      statusDeposit,
+      statusRedeem,
+      isConfirmingAllowance,
+      isConfirmingRedeem,
+      isConfirmingDeposit,
+    ]
+  );
+
+  const isDepositButtonDisabled = useMemo(
+    () =>
+      !hasSufficientDepositAmount ||
+      !hasSufficientBalance ||
+      statusAccount !== 'connected' ||
+      showSpinner,
+    [hasSufficientDepositAmount, hasSufficientBalance, statusAccount, showSpinner]
+  );
+
+  const isRedeemButtonDisabled = useMemo(
+    () =>
+      !hasSufficientRedemptionAmount ||
+      !hasSufficientShares ||
+      statusAccount !== 'connected' ||
+      showSpinner,
+    [hasSufficientRedemptionAmount, hasSufficientShares, statusAccount, showSpinner]
+  );
+
+  const isDepositInputDisabled = useMemo(() => showSpinner, [showSpinner]);
+
+  const isRedeemInputDisabled = useMemo(() => showSpinner, [showSpinner]);
 
   const deposit = () => {
     if (!hasSufficientDepositAmount) {
@@ -201,7 +269,7 @@ export const Pool = () => {
   };
 
   useEffect(() => {
-    if (statusDeposit === 'success') {
+    if (depositConfirmed) {
       setDepositDrawerOpen(false);
       refetchTotalAssets();
       refetchBalance();
@@ -210,10 +278,10 @@ export const Pool = () => {
       refetchTotalShares();
       setDepositAmount('$ 0');
     }
-  }, [statusDeposit]);
+  }, [depositConfirmed]);
 
   useEffect(() => {
-    if (statusRedeem === 'success') {
+    if (redemptionConfirmed) {
       setRedeemDrawerOpen(false);
       refetchTotalAssets();
       refetchBalance();
@@ -222,13 +290,13 @@ export const Pool = () => {
       refetchTotalShares();
       setRedemptionAmount('0 PLP');
     }
-  }, [statusRedeem]);
+  }, [redemptionConfirmed]);
 
   useEffect(() => {
-    if (statusAllowance === 'success') {
+    if (allowanceConfirmed) {
       refetchAllowance();
     }
-  }, [statusAllowance]);
+  }, [allowanceConfirmed]);
 
   return (
     <div className="flex flex-col items-center">
@@ -317,6 +385,7 @@ export const Pool = () => {
                     </div>
                   </div>
                   <Input
+                    disabled={isDepositInputDisabled}
                     ref={dollarMaskedInputRef}
                     className="font-bold"
                     value={depositAmount}
@@ -337,11 +406,10 @@ export const Pool = () => {
                     variant="primary"
                     size="lg"
                     fontWeight="heavy"
-                    disabled={
-                      !hasSufficientDepositAmount || !hasSufficientBalance || status !== 'connected'
-                    }
+                    disabled={isDepositButtonDisabled}
                     onClick={deposit}
                   >
+                    {showSpinner && <Spinner size="small" className="mr-2 text-foreground" />}
                     {depositButtonText}
                   </Button>
                 </DrawerFooter>
@@ -375,6 +443,7 @@ export const Pool = () => {
                     </div>
                   </div>
                   <Input
+                    disabled={isRedeemInputDisabled}
                     ref={lpMaskedInputRef}
                     className="font-bold"
                     value={redemptionAmount}
@@ -395,13 +464,10 @@ export const Pool = () => {
                     variant="primary"
                     size="lg"
                     fontWeight="heavy"
-                    disabled={
-                      !hasSufficientRedemptionAmount ||
-                      !hasSufficientShares ||
-                      status !== 'connected'
-                    }
+                    disabled={isRedeemButtonDisabled}
                     onClick={redeem}
                   >
+                    {showSpinner && <Spinner size="small" className="mr-2 text-foreground" />}
                     {redeemButtonText}
                   </Button>
                 </DrawerFooter>
