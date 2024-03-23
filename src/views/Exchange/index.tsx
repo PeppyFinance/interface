@@ -124,7 +124,7 @@ export const Exchange = () => {
             : !hasEnoughAllowance
               ? 'Approve'
               : 'Open Position',
-    [hasSufficientSize, hasEnoughBalance, hasEnoughAllowance, status]
+    [hasSufficientSize, hasEnoughBalance, hasEnoughAllowance, statusAccount]
   );
 
   const showSpinner = useMemo(
@@ -136,10 +136,12 @@ export const Exchange = () => {
     [statusApproval, statusOpenPosition, isConfirmingApproval, isConfirmingOpenPosition]
   );
 
-  const disableButton = useMemo(
+  const isButtonDisabled = useMemo(
     () => !hasEnoughBalance || !hasSufficientSize || statusAccount !== 'connected' || showSpinner,
     [hasEnoughBalance, hasSufficientSize, statusAccount, showSpinner]
   );
+
+  const isInputDisabled = useMemo(() => showSpinner, [showSpinner]);
 
   const currentMarketState = marketsState[currentMarket];
 
@@ -349,6 +351,7 @@ export const Exchange = () => {
             </div>
           </div>
           <Input
+            disabled={isInputDisabled}
             ref={maskedInputRef}
             className="font-bold"
             value={collateral}
@@ -404,7 +407,7 @@ export const Exchange = () => {
           </CardContent>
           <CardFooter>
             <Button
-              disabled={disableButton}
+              disabled={isButtonDisabled}
               className="w-full mr-2"
               fontWeight="heavy"
               size="lg"
