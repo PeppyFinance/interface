@@ -46,14 +46,20 @@ export const Exchange = () => {
     status: statusApproval,
   } = useWriteContract();
 
-  const { isLoading: isConfirmingOpenPosition, isSuccess: openPositionConfirmed } =
-    useWaitForTransactionReceipt({
-      hash: hashOpenPosition,
-    });
-  const { isLoading: isConfirmingApproval, isSuccess: approvalConfirmed } =
-    useWaitForTransactionReceipt({
-      hash: hashApproval,
-    });
+  const {
+    isLoading: isConfirmingOpenPosition,
+    isSuccess: openPositionConfirmed,
+    isError: openPositionNotConfirmed,
+  } = useWaitForTransactionReceipt({
+    hash: hashOpenPosition,
+  });
+  const {
+    isLoading: isConfirmingApproval,
+    isSuccess: approvalConfirmed,
+    isError: approvalNotConfirmed,
+  } = useWaitForTransactionReceipt({
+    hash: hashApproval,
+  });
 
   const maskedInputRef = useMaskito({ options: DollarMask });
 
@@ -289,6 +295,12 @@ export const Exchange = () => {
   }, [openPositionConfirmed]);
 
   useEffect(() => {
+    if (openPositionNotConfirmed) {
+      toast.error('Position not confirmed', { description: 'Something went wrong.' });
+    }
+  }, [openPositionNotConfirmed]);
+
+  useEffect(() => {
     if (approvalConfirmed) {
       refetchAllowance();
       toast.success('Allowance confirmed.');
@@ -296,14 +308,24 @@ export const Exchange = () => {
   }, [approvalConfirmed]);
 
   useEffect(() => {
+    if (approvalNotConfirmed) {
+      toast.error('Allowance not confirmed', { description: 'Something went wrong.' });
+    }
+  }, [approvalNotConfirmed]);
+
+  useEffect(() => {
     if (statusApproval === 'success') {
       toast.info('Increase Allowance', { description: 'Waiting for confirmation.' });
+    } else if (statusApproval === 'error') {
+      toast.error('Cannot increase allowance', { description: 'Something went wrong.' });
     }
   }, [statusApproval]);
 
   useEffect(() => {
     if (statusOpenPosition === 'success') {
       toast.info('Open Position', { description: 'Waiting for confirmation.' });
+    } else if (statusOpenPosition === 'error') {
+      toast.error('Cannot open position', { description: 'Something went wrong.' });
     }
   }, [statusOpenPosition]);
 
