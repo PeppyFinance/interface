@@ -14,13 +14,29 @@ import { Asset } from '../Asset';
 import { PRICE_PRECISION } from '@/lib/constants';
 
 function formatUSD(value: bigint): string {
-  return (
-    '$' +
-    Intl.NumberFormat()
-      .format(BigInt(formatEther(value)))
-      .toString()
-  );
+  return Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(Number(formatEther(value)));
 }
+
+const PNL = ({ value }: { value: bigint }) => {
+  const isNegative = value < 0n;
+  const pnl = formatUSD(value);
+
+  return (
+    <span
+      className={classNames({
+        'text-constructive': !isNegative,
+        'text-destructive': isNegative,
+      })}
+    >
+      {pnl}
+    </span>
+  );
+};
 
 const closedPositionsSubscription = graphql(/* GraphQL */ `
   subscription UserPositions($owner: String!) {
@@ -71,7 +87,7 @@ const Position = ({
   market,
 }: PositionProps) => {
   return (
-    <Card className="my-6 bg-glass/20 backdrop-blur-md rounded-md ">
+    <Card className="bg-glass/20 backdrop-blur-md rounded-md ">
       <CardHeader
         className={classNames('rounded-t-md p-0', {
           'bg-constructive/70': isLong,
@@ -109,10 +125,10 @@ const Position = ({
             <p>Funding Fee:</p>
             <p>{fundingFee}</p>
           </div>
-          <div className="flex justify-between">
-            <p>Net PnL:</p>
-            <p>{pnl}</p>
-          </div>
+        </div>
+        <div className="flex justify-between mt-6">
+          <p>Net PnL:</p>
+          <p>{<PNL value={BigInt(pnl)} />}</p>
         </div>
       </CardContent>
     </Card>

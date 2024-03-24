@@ -22,13 +22,29 @@ import { useMarketStore } from '@/store';
 import { useEffect } from 'react';
 
 function formatUSD(value: bigint): string {
-  return (
-    '$' +
-    Intl.NumberFormat()
-      .format(BigInt(formatEther(value)))
-      .toString()
-  );
+  return Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(Number(formatEther(value)));
 }
+
+const PNL = ({ value }: { value: bigint }) => {
+  const isNegative = value < 0n;
+  const pnl = formatUSD(value);
+
+  return (
+    <span
+      className={classNames({
+        'text-constructive': !isNegative,
+        'text-destructive': isNegative,
+      })}
+    >
+      {pnl}
+    </span>
+  );
+};
 
 const openPositionsSubscription = graphql(/* GraphQL */ `
   subscription getPositions($owner: String!) {
@@ -69,7 +85,7 @@ const Position = ({
   const { writeContract } = useWriteContract();
   const { marketsState } = useMarketStore();
 
-  const leverage = Number(size) / Number(collateral);
+  const leverage = Number(size / collateral);
 
   const handleClose = async () => {
     const priceFeedId = mapMarketToPriceFeedId(market);
@@ -90,6 +106,11 @@ const Position = ({
     // NOTE: clean up on unmount
     return unsubscribeToPriceFeeds;
   }, []);
+
+  const currentPrice = marketsState[market]?.currentPrice;
+  const pnl = currentPrice
+    ? BigInt(Math.round(size * (currentPrice / (entryPrice / PRICE_PRECISION) - 1)))
+    : 0n;
 
   return (
     <Card className="bg-glass/20 backdrop-blur-md rounded-md">
@@ -124,8 +145,14 @@ const Position = ({
           </div>
           <div className="flex justify-between">
             <p>Current Price:</p>
-            <p>{formatPrice(Number(marketsState[market]?.currentPrice))}</p>
+            <p>{currentPrice ? formatPrice(currentPrice) : '$...'}</p>
           </div>
+        </div>
+        <div className="flex justify-between mt-6">
+          <p>Current PnL:</p>
+          <p>
+            <PNL value={pnl} />
+          </p>
         </div>
       </CardContent>
       <CardFooter>
