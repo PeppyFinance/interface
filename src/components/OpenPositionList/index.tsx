@@ -1,7 +1,6 @@
 import { useSubscription } from 'urql';
 import { useAccount, useBlock, useWriteContract } from 'wagmi';
 import { Card, CardContent, CardFooter, CardHeader } from '../ui/card';
-import { ScrollArea } from '../ui/scroll-area';
 import classNames from 'classnames';
 import { graphql } from '@/graphql';
 import { useMarketStore } from '@/store';
@@ -166,7 +165,7 @@ const Position = ({ id, size, collateral, entryPrice, isLong }: PositionProps) =
   };
 
   return (
-    <Card className="my-6 bg-glass/20 backdrop-blur-md rounded-md ">
+    <Card className="bg-glass/20 backdrop-blur-md rounded-md">
       <CardHeader
         className={classNames('rounded-t-md p-0', {
           'bg-constructive/70': isLong,
@@ -222,8 +221,8 @@ export function OpenPositionList() {
   if (fetching) return <div>Loading...</div>;
 
   return (
-    <div className="flex justify-center">
-      <ScrollArea className="w-[90%]">
+    <div className="h-full p-6">
+      <div className="flex flex-col space-y-4">
         {data && data.Position.length !== 0 ? (
           data.Position.map(position => (
             <Position
@@ -238,7 +237,7 @@ export function OpenPositionList() {
         ) : (
           <div className="px-4 py-8">No open positions.</div>
         )}
-      </ScrollArea>
+      </div>
     </div>
   );
 }

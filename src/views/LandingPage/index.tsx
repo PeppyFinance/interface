@@ -4,7 +4,7 @@ import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carouse
 export const LandingPage = () => {
   return (
     <>
-      <div className="flex flex-col w-full">
+      <div className="flex flex-col w-full h-full overflow-hidden">
         <Carousel className="flex-grow">
           <CarouselContent>
             {Array.from({ length: 1 }).map((_, index) => (

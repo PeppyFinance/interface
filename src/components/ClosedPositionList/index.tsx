@@ -1,7 +1,6 @@
 import { useSubscription } from 'urql';
 import { useAccount } from 'wagmi';
 import { graphql } from '@/graphql';
-import { ScrollArea } from '@radix-ui/react-scroll-area';
 import { Card, CardContent, CardHeader } from '../ui/card';
 import classNames from 'classnames';
 import { formatEther } from 'viem';
@@ -117,8 +116,8 @@ export function ClosedPositionList() {
   if (fetching) return <div>Loading...</div>;
 
   return (
-    <div className="flex justify-center">
-      <ScrollArea className="w-[90%]">
+    <div className="h-full p-6">
+      <div className="flex flex-col space-y-4">
         {data && data?.Position.length !== 0 ? (
           data.Position.map(position => (
             <Position
@@ -135,7 +134,7 @@ export function ClosedPositionList() {
         ) : (
           <div className="px-4 py-8">No closed positions.</div>
         )}
-      </ScrollArea>
+      </div>
     </div>
   );
 }
