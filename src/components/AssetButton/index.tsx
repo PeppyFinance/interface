@@ -43,26 +43,26 @@ const assets = [
     value: 'BTC',
     market: Market.BTCUSD,
   },
-  {
-    key: 'ltc',
-    value: 'LTC',
-    market: Market.LTCUSD,
-  },
-  {
-    key: 'avax',
-    value: 'AVAX',
-    market: Market.AVAXUSD,
-  },
-  {
-    key: 'doge',
-    value: 'DOGE',
-    market: Market.DOGEUSD,
-  },
-  {
-    key: 'shib',
-    value: 'SHIB',
-    market: Market.SHIBUSD,
-  },
+  // {
+  //   key: 'ltc',
+  //   value: 'LTC',
+  //   market: Market.LTCUSD,
+  // },
+  // {
+  //   key: 'avax',
+  //   value: 'AVAX',
+  //   market: Market.AVAXUSD,
+  // },
+  // {
+  //   key: 'doge',
+  //   value: 'DOGE',
+  //   market: Market.DOGEUSD,
+  // },
+  // {
+  //   key: 'shib',
+  //   value: 'SHIB',
+  //   market: Market.SHIBUSD,
+  // },
 ];
 
 const TriggerButton = () => {

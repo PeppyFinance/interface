@@ -1,27 +1,52 @@
 import { useSubscription } from 'urql';
-import { useAccount, useBlock, useWriteContract } from 'wagmi';
+import { useAccount, useWriteContract } from 'wagmi';
 import { Card, CardContent, CardFooter, CardHeader } from '../ui/card';
-import { ScrollArea } from '../ui/scroll-area';
 import classNames from 'classnames';
 import { graphql } from '@/graphql';
-import { useMarketStore } from '@/store';
-import { tradePairAddress } from '@/lib/addresses';
-import { Hex, encodeAbiParameters, formatEther } from 'viem';
-import { connection } from '@/lib/pyth';
+import { Address, formatEther } from 'viem';
+import { connection, subscribeToPriceFeeds, unsubscribeToPriceFeeds } from '@/lib/pyth';
 import * as tradePairAbi from '@/abi/TradePair.json';
 import { Button } from '../ui/button';
-import { formatDynamicPrecisionPrice } from '@/lib/utils';
+import {
+  formatDynamicPrecisionPrice,
+  formatPrice,
+  mapMarketToAssetPath,
+  mapMarketToPriceFeedId,
+  mapMarketToTradePairAddress,
+  mapTradePairAddressToMarket,
+} from '@/lib/utils';
+import { Market } from '@/types';
+import { Asset } from '../Asset';
+import { PRICE_PRECISION } from '@/lib/constants';
+import { useMarketStore } from '@/store';
+import { useEffect } from 'react';
 
 function formatUSD(value: bigint): string {
-  return (
-    '$' +
-    Intl.NumberFormat()
-      .format(BigInt(formatEther(value)))
-      .toString()
-  );
+  return Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(Number(formatEther(value)));
 }
 
-const newPositionsSubscription = graphql(/* GraphQL */ `
+const PNL = ({ value }: { value: bigint }) => {
+  const isNegative = value < 0n;
+  const pnl = formatUSD(value);
+
+  return (
+    <span
+      className={classNames({
+        'text-constructive': !isNegative,
+        'text-destructive': isNegative,
+      })}
+    >
+      {pnl}
+    </span>
+  );
+};
+
+const openPositionsSubscription = graphql(/* GraphQL */ `
   subscription getPositions($owner: String!) {
     Position(where: { owner: { address: { _eq: $owner } }, isOpen: { _eq: true } }) {
       collateral
@@ -30,126 +55,42 @@ const newPositionsSubscription = graphql(/* GraphQL */ `
       entryPrice
       entryTimestamp
       id
+      tradePair_id
+      tradePair {
+        name
+      }
     }
   }
 `);
 
 interface PositionProps {
   id: string;
-  size: string;
-  collateral: string;
-  entryPrice: string;
+  size: number;
+  collateral: number;
+  entryPrice: number;
   isLong: boolean;
+  market: Market;
+  pairName: string;
 }
 
-const Position = ({ id, size, collateral, entryPrice, isLong }: PositionProps) => {
+const Position = ({
+  id,
+  size,
+  collateral,
+  entryPrice,
+  isLong,
+  market,
+  pairName,
+}: PositionProps) => {
   const { writeContract } = useWriteContract();
-  const block = useBlock();
-  const { marketsState, currentMarket } = useMarketStore();
+  const { marketsState } = useMarketStore();
+
+  const leverage = Number(size / collateral);
 
   const handleClose = async () => {
-    const currentMarketState = marketsState[currentMarket];
-
-    if (currentMarketState === null) {
-      // TODO: probably should log here
-      return;
-    }
-
-    let priceFeedUpdateData;
-    const timestamp = block.data?.timestamp;
-    if (import.meta.env.MODE === 'anvil') {
-      // on a local anvil chain, we use MockPyth and have to encode the data ourselves
-      priceFeedUpdateData = [
-        encodeAbiParameters(
-          [
-            {
-              components: [
-                {
-                  internalType: 'bytes32',
-                  name: 'id',
-                  type: 'bytes32',
-                },
-                {
-                  components: [
-                    {
-                      internalType: 'int64',
-                      name: 'price',
-                      type: 'int64',
-                    },
-                    {
-                      internalType: 'uint64',
-                      name: 'conf',
-                      type: 'uint64',
-                    },
-                    {
-                      internalType: 'int32',
-                      name: 'expo',
-                      type: 'int32',
-                    },
-                    {
-                      internalType: 'uint64',
-                      name: 'publishTime',
-                      type: 'uint64',
-                    },
-                  ],
-                  name: 'price',
-                  type: 'tuple',
-                },
-                {
-                  components: [
-                    {
-                      internalType: 'int64',
-                      name: 'price',
-                      type: 'int64',
-                    },
-                    {
-                      internalType: 'uint64',
-                      name: 'conf',
-                      type: 'uint64',
-                    },
-                    {
-                      internalType: 'int32',
-                      name: 'expo',
-                      type: 'int32',
-                    },
-                    {
-                      internalType: 'uint64',
-                      name: 'publishTime',
-                      type: 'uint64',
-                    },
-                  ],
-                  name: 'emaPrice',
-                  type: 'tuple',
-                },
-              ],
-              name: 'PriceFeed',
-              type: 'tuple',
-            },
-          ],
-          [
-            {
-              id: ('0x' + currentMarketState.priceFeedId) as Hex,
-              price: {
-                price: BigInt(currentMarketState.price),
-                conf: BigInt(currentMarketState.confidence),
-                expo: currentMarketState.expo,
-                publishTime: timestamp,
-              },
-              emaPrice: {
-                price: BigInt(currentMarketState.price),
-                conf: BigInt(currentMarketState.confidence),
-                expo: currentMarketState.expo,
-                publishTime: timestamp,
-              },
-            },
-          ]
-        ),
-      ];
-    } else {
-      priceFeedUpdateData = await connection.getPriceFeedsUpdateData([
-        currentMarketState.priceFeedId,
-      ]);
-    }
+    const priceFeedId = mapMarketToPriceFeedId(market);
+    const priceFeedUpdateData = await connection.getPriceFeedsUpdateData([priceFeedId]);
+    const tradePairAddress = mapMarketToTradePairAddress(market);
 
     writeContract({
       address: tradePairAddress,
@@ -160,8 +101,19 @@ const Position = ({ id, size, collateral, entryPrice, isLong }: PositionProps) =
     });
   };
 
+  useEffect(() => {
+    subscribeToPriceFeeds();
+    // NOTE: clean up on unmount
+    return unsubscribeToPriceFeeds;
+  }, []);
+
+  const currentPrice = marketsState[market]?.currentPrice;
+  const pnl = currentPrice
+    ? BigInt(Math.round(size * (currentPrice / (entryPrice / PRICE_PRECISION) - 1)))
+    : 0n;
+
   return (
-    <Card className="my-6 bg-glass/20 backdrop-blur-md rounded-md ">
+    <Card className="bg-glass/20 backdrop-blur-md rounded-md">
       <CardHeader
         className={classNames('rounded-t-md p-0', {
           'bg-constructive/70': isLong,
@@ -172,18 +124,35 @@ const Position = ({ id, size, collateral, entryPrice, isLong }: PositionProps) =
       </CardHeader>
       <CardContent>
         <div className="space-y-1 pt-6">
-          <div className="flex justify-between">
-            <p>Size:</p>
-            <p>{formatUSD(BigInt(size))}</p>
+          <div className="mb-4">
+            <Asset asset={{ key: pairName, value: pairName }} path={mapMarketToAssetPath(market)} />
           </div>
           <div className="flex justify-between">
             <p>Collateral:</p>
             <p>{formatUSD(BigInt(collateral))}</p>
           </div>
           <div className="flex justify-between">
-            <p>Entry Price:</p>
-            <p>${formatDynamicPrecisionPrice(Number(entryPrice))}</p>
+            <p>Leverage:</p>
+            <p>{leverage}x</p>
           </div>
+          <div className="flex justify-between">
+            <p>Size:</p>
+            <p>{formatUSD(BigInt(size))}</p>
+          </div>
+          <div className="flex justify-between">
+            <p>Entry Price:</p>
+            <p>${formatDynamicPrecisionPrice(Number(entryPrice) / PRICE_PRECISION)}</p>
+          </div>
+          <div className="flex justify-between">
+            <p>Current Price:</p>
+            <p>{currentPrice ? formatPrice(currentPrice) : '$...'}</p>
+          </div>
+        </div>
+        <div className="flex justify-between mt-6">
+          <p>Current PnL:</p>
+          <p>
+            <PNL value={pnl} />
+          </p>
         </div>
       </CardContent>
       <CardFooter>
@@ -199,7 +168,7 @@ export function OpenPositionList() {
   const { address, status } = useAccount();
 
   const [result] = useSubscription({
-    query: newPositionsSubscription,
+    query: openPositionsSubscription,
     variables: { owner: address || '' },
     pause: !address,
   });
@@ -217,8 +186,8 @@ export function OpenPositionList() {
   if (fetching) return <div>Loading...</div>;
 
   return (
-    <div className="flex justify-center">
-      <ScrollArea className="w-[90%]">
+    <div className="h-full p-6">
+      <div className="flex flex-col space-y-4">
         {data && data.Position.length !== 0 ? (
           data.Position.map(position => (
             <Position
@@ -227,13 +196,15 @@ export function OpenPositionList() {
               size={position.entryVolume}
               collateral={position.collateral}
               entryPrice={position.entryPrice}
-              isLong={position.direction === '1'}
+              isLong={position.direction === 1}
+              market={mapTradePairAddressToMarket(position.tradePair_id as Address)}
+              pairName={position.tradePair?.name || ''}
             />
           ))
         ) : (
           <div className="px-4 py-8">No open positions.</div>
         )}
-      </ScrollArea>
+      </div>
     </div>
   );
 }

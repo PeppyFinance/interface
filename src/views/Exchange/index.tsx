@@ -6,14 +6,22 @@ import { Slider } from '@/components/ui/slider';
 import { InfoCircledIcon } from '@radix-ui/react-icons';
 import { useEffect, useMemo, useState } from 'react';
 import { useMaskito } from '@maskito/react';
-import { collateralTokenAddress, tradePairAddress } from '@/lib/addresses';
-import { useAccount, useReadContract, useWriteContract, useBlock } from 'wagmi';
-import { erc20Abi, parseEther, formatEther, encodeAbiParameters, Hex } from 'viem';
+import { collateralTokenAddress } from '@/lib/addresses';
+import {
+  useAccount,
+  useReadContract,
+  useWriteContract,
+  useBlock,
+  useWaitForTransactionReceipt,
+} from 'wagmi';
+import { erc20Abi, parseEther, formatEther } from 'viem';
 import * as tradePairAbi from '@/abi/TradePair.json';
 import { connection, subscribeToPriceFeeds, unsubscribeToPriceFeeds } from '@/lib/pyth';
-import { formatPrice } from '@/lib/utils';
+import { formatPrice, mapMarketToTradePairAddress } from '@/lib/utils';
 import { useMarketStore } from '@/store';
 import { DollarMask } from '@/lib/masks';
+import { Spinner } from '@/components/ui/spinner';
+import { toast } from 'sonner';
 
 function parseCollateral(collateralString: string): bigint {
   return BigInt(collateralString.replaceAll('$', '').replaceAll(',', '').replaceAll(' ', ''));
@@ -25,10 +33,34 @@ function formatPositionSize(positionSize: bigint): string {
 
 export const Exchange = () => {
   const { marketsState, currentMarket } = useMarketStore();
-  const { address, status } = useAccount();
-  const { writeContract: writeContractOpenPosition, status: statusOpenPosition } =
-    useWriteContract();
-  const { writeContract: writeContractApprove, status: statusApprove } = useWriteContract();
+  const { address, status: statusAccount } = useAccount();
+
+  const {
+    writeContract: writeContractOpenPosition,
+    data: hashOpenPosition,
+    status: statusOpenPosition,
+  } = useWriteContract();
+  const {
+    writeContract: writeContractApprove,
+    data: hashApproval,
+    status: statusApproval,
+  } = useWriteContract();
+
+  const {
+    isLoading: isConfirmingOpenPosition,
+    isSuccess: openPositionConfirmed,
+    isError: openPositionNotConfirmed,
+  } = useWaitForTransactionReceipt({
+    hash: hashOpenPosition,
+  });
+  const {
+    isLoading: isConfirmingApproval,
+    isSuccess: approvalConfirmed,
+    isError: approvalNotConfirmed,
+  } = useWaitForTransactionReceipt({
+    hash: hashApproval,
+  });
+
   const maskedInputRef = useMaskito({ options: DollarMask });
 
   const [collateral, setCollateral] = useState<string>('$ 0');
@@ -36,6 +68,11 @@ export const Exchange = () => {
   const [direction, setDirection] = useState<1 | -1>(1);
 
   const block = useBlock();
+
+  const tradePairAddress = useMemo(
+    () => mapMarketToTradePairAddress(currentMarket),
+    [currentMarket]
+  );
 
   const parsedCollateral = useMemo(
     () => parseEther(String(parseCollateral(collateral))),
@@ -45,6 +82,17 @@ export const Exchange = () => {
     () => parsedCollateral * BigInt(leverage),
     [parsedCollateral, leverage]
   );
+
+  // useEffect(() => {
+  //   writeContract({
+  //     address: collateralTokenAddress,
+  //     abi: parseAbi(['function mint(uint256 _amount)']),
+  //     functionName: 'mint',
+  //     args: [parseEther('1000000')],
+  //   });
+  // }, []);
+  //
+  // console.log(error);
 
   const { data: balance, refetch: refetchBalance } = useReadContract({
     address: collateralTokenAddress,
@@ -74,7 +122,7 @@ export const Exchange = () => {
 
   const buttonText = useMemo(
     () =>
-      status !== 'connected'
+      statusAccount !== 'connected'
         ? 'Wallet not connected'
         : !hasSufficientSize
           ? 'Insufficient size'
@@ -83,8 +131,24 @@ export const Exchange = () => {
             : !hasEnoughAllowance
               ? 'Approve'
               : 'Open Position',
-    [hasSufficientSize, hasEnoughBalance, hasEnoughAllowance, status]
+    [hasSufficientSize, hasEnoughBalance, hasEnoughAllowance, statusAccount]
   );
+
+  const showSpinner = useMemo(
+    () =>
+      statusApproval === 'pending' ||
+      statusOpenPosition === 'pending' ||
+      isConfirmingApproval ||
+      isConfirmingOpenPosition,
+    [statusApproval, statusOpenPosition, isConfirmingApproval, isConfirmingOpenPosition]
+  );
+
+  const isButtonDisabled = useMemo(
+    () => !hasEnoughBalance || !hasSufficientSize || statusAccount !== 'connected' || showSpinner,
+    [hasEnoughBalance, hasSufficientSize, statusAccount, showSpinner]
+  );
+
+  const isInputDisabled = useMemo(() => showSpinner, [showSpinner]);
 
   const currentMarketState = marketsState[currentMarket];
 
@@ -101,109 +165,15 @@ export const Exchange = () => {
         args: [tradePairAddress, parsedCollateral],
       });
     } else {
-      let priceFeedUpdateData;
-      const timestamp = block.data?.timestamp;
-      if (import.meta.env.MODE === 'anvil') {
-        // on a local anvil chain, we use MockPyth and have to encode the data ourselves
-        priceFeedUpdateData = [
-          encodeAbiParameters(
-            [
-              {
-                components: [
-                  {
-                    internalType: 'bytes32',
-                    name: 'id',
-                    type: 'bytes32',
-                  },
-                  {
-                    components: [
-                      {
-                        internalType: 'int64',
-                        name: 'price',
-                        type: 'int64',
-                      },
-                      {
-                        internalType: 'uint64',
-                        name: 'conf',
-                        type: 'uint64',
-                      },
-                      {
-                        internalType: 'int32',
-                        name: 'expo',
-                        type: 'int32',
-                      },
-                      {
-                        internalType: 'uint64',
-                        name: 'publishTime',
-                        type: 'uint64',
-                      },
-                    ],
-                    name: 'price',
-                    type: 'tuple',
-                  },
-                  {
-                    components: [
-                      {
-                        internalType: 'int64',
-                        name: 'price',
-                        type: 'int64',
-                      },
-                      {
-                        internalType: 'uint64',
-                        name: 'conf',
-                        type: 'uint64',
-                      },
-                      {
-                        internalType: 'int32',
-                        name: 'expo',
-                        type: 'int32',
-                      },
-                      {
-                        internalType: 'uint64',
-                        name: 'publishTime',
-                        type: 'uint64',
-                      },
-                    ],
-                    name: 'emaPrice',
-                    type: 'tuple',
-                  },
-                ],
-                name: 'PriceFeed',
-                type: 'tuple',
-              },
-            ],
-            [
-              {
-                id: ('0x' + currentMarketState.priceFeedId) as Hex,
-                price: {
-                  price: BigInt(currentMarketState.price),
-                  conf: BigInt(currentMarketState.confidence),
-                  expo: currentMarketState.expo,
-                  publishTime: timestamp,
-                },
-                emaPrice: {
-                  price: BigInt(currentMarketState.price),
-                  conf: BigInt(currentMarketState.confidence),
-                  expo: currentMarketState.expo,
-                  publishTime: timestamp,
-                },
-              },
-            ]
-          ),
-        ];
-      } else {
-        priceFeedUpdateData = await connection.getPriceFeedsUpdateData([
-          currentMarketState.priceFeedId,
-        ]);
-      }
+      const priceFeedUpdateData = await connection.getPriceFeedsUpdateData([
+        currentMarketState.priceFeedId,
+      ]);
 
       writeContractOpenPosition({
         address: tradePairAddress,
         abi: tradePairAbi.abi,
         functionName: 'openPosition',
-        // TODO: place price data in here
         args: [parsedCollateral, leverage * 1_000_000, direction, priceFeedUpdateData],
-        value: 1n,
       });
     }
   };
@@ -225,17 +195,47 @@ export const Exchange = () => {
   }, []);
 
   useEffect(() => {
-    if (statusOpenPosition === 'success') {
+    if (openPositionConfirmed) {
       refetchBalance();
       refetchAllowance();
+      toast.success('Position confirmed');
     }
-  }, [statusOpenPosition]);
+  }, [openPositionConfirmed]);
 
   useEffect(() => {
-    if (statusApprove === 'success') {
-      refetchAllowance();
+    if (openPositionNotConfirmed) {
+      toast.error('Position not confirmed', { description: 'Something went wrong.' });
     }
-  }, [statusApprove]);
+  }, [openPositionNotConfirmed]);
+
+  useEffect(() => {
+    if (approvalConfirmed) {
+      refetchAllowance();
+      toast.success('Allowance confirmed.');
+    }
+  }, [approvalConfirmed]);
+
+  useEffect(() => {
+    if (approvalNotConfirmed) {
+      toast.error('Allowance not confirmed', { description: 'Something went wrong.' });
+    }
+  }, [approvalNotConfirmed]);
+
+  useEffect(() => {
+    if (statusApproval === 'success') {
+      toast.info('Increase Allowance', { description: 'Waiting for confirmation.' });
+    } else if (statusApproval === 'error') {
+      toast.error('Cannot increase allowance', { description: 'Something went wrong.' });
+    }
+  }, [statusApproval]);
+
+  useEffect(() => {
+    if (statusOpenPosition === 'success') {
+      toast.info('Open Position', { description: 'Waiting for confirmation.' });
+    } else if (statusOpenPosition === 'error') {
+      toast.error('Cannot open position', { description: 'Something went wrong.' });
+    }
+  }, [statusOpenPosition]);
 
   return (
     <div className="px-3 flex flex-col">
@@ -296,6 +296,7 @@ export const Exchange = () => {
             </div>
           </div>
           <Input
+            disabled={isInputDisabled}
             ref={maskedInputRef}
             className="font-bold"
             value={collateral}
@@ -351,13 +352,14 @@ export const Exchange = () => {
           </CardContent>
           <CardFooter>
             <Button
-              disabled={!hasEnoughBalance || !hasSufficientSize || status !== 'connected'}
+              disabled={isButtonDisabled}
               className="w-full mr-2"
               fontWeight="heavy"
               size="lg"
               variant={direction === 1 ? 'constructive' : 'destructive'}
               onClick={handleOpenPosition}
             >
+              {showSpinner && <Spinner size="small" className="mr-2 text-foreground" />}
               {buttonText}
             </Button>
           </CardFooter>

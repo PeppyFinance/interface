@@ -3,6 +3,7 @@ import './App.css';
 import { Link, Outlet } from 'react-router-dom';
 import { HamburgerMenuIcon } from '@radix-ui/react-icons';
 import { SheetContent, SheetHeader, SheetTitle, Sheet } from './components/ui/sheet';
+import { Toaster } from './components/ui/sonner';
 
 const Header = () => {
   const [menuOpen, setMenuOpen] = useState<boolean>(false);
@@ -45,6 +46,7 @@ export const Layout = () => {
       <Header />
       <div className="absolute top-12 w-full">
         <Outlet />
+        <Toaster position="top-center" />
       </div>
     </div>
   );

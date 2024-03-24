@@ -1,7 +1,7 @@
 import { CodegenConfig } from '@graphql-codegen/cli';
 
 const config: CodegenConfig = {
-  schema: 'http://localhost:8080/v1/graphql',
+  schema: 'https://indexer.bigdevenergy.link/e2f5ba4/v1/graphql',
   documents: ['src/**/*.tsx'],
   ignoreNoDocuments: true, // for better experience with the watcher
   generates: {
@@ -9,7 +9,7 @@ const config: CodegenConfig = {
       preset: 'client',
       config: {
         scalars: {
-          numeric: 'string',
+          numeric: 'number',
         },
       },
     },

@@ -23,10 +23,10 @@ export const useMarketStore = create<AppState>()(set => ({
     IOTAUSD: null,
     BTCUSD: null,
     ETHUSD: null,
-    LTCUSD: null,
-    AVAXUSD: null,
-    DOGEUSD: null,
-    SHIBUSD: null,
+    // LTCUSD: null,
+    // AVAXUSD: null,
+    // DOGEUSD: null,
+    // SHIBUSD: null,
   },
   setMarketState: (market: Market, marketState: MarketState) =>
     set(state => ({
