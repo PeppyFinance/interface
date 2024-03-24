@@ -105,7 +105,7 @@ const TriggerButton = () => {
               <div
                 key={asset.key}
                 className={classNames('flex', {
-                  'bg-white/25 border rounded-lg': asset.key === selectedAsset?.key,
+                  'bg-glass/20 border rounded-lg': asset.key === selectedAsset?.key,
                 })}
                 onClick={() => setSelectedAsset(asset)}
               >
