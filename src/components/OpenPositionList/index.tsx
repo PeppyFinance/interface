@@ -11,6 +11,8 @@ import { Button } from '../ui/button';
 import { formatDynamicPrecisionPrice, mapMarketToTradePairAddress } from '@/lib/utils';
 import { useMemo } from 'react';
 
+const PRICE_PRECISION = 1e30;
+
 function formatUSD(value: bigint): string {
   return (
     '$' +
@@ -20,7 +22,7 @@ function formatUSD(value: bigint): string {
   );
 }
 
-const newPositionsSubscription = graphql(/* GraphQL */ `
+const openPositionsSubscription = graphql(/* GraphQL */ `
   subscription getPositions($owner: String!) {
     Position(where: { owner: { address: { _eq: $owner } }, isOpen: { _eq: true } }) {
       collateral
@@ -45,6 +47,8 @@ const Position = ({ id, size, collateral, entryPrice, isLong }: PositionProps) =
   const { writeContract } = useWriteContract();
   const block = useBlock();
   const { marketsState, currentMarket } = useMarketStore();
+
+  const leverage = Number(size) / Number(collateral);
 
   const tradePairAddress = useMemo(
     () => mapMarketToTradePairAddress(currentMarket),
@@ -177,16 +181,20 @@ const Position = ({ id, size, collateral, entryPrice, isLong }: PositionProps) =
       <CardContent>
         <div className="space-y-1 pt-6">
           <div className="flex justify-between">
-            <p>Size:</p>
-            <p>{formatUSD(BigInt(size))}</p>
-          </div>
-          <div className="flex justify-between">
             <p>Collateral:</p>
             <p>{formatUSD(BigInt(collateral))}</p>
           </div>
           <div className="flex justify-between">
+            <p>Leverage:</p>
+            <p>{leverage}x</p>
+          </div>
+          <div className="flex justify-between">
+            <p>Size:</p>
+            <p>{formatUSD(BigInt(size))}</p>
+          </div>
+          <div className="flex justify-between">
             <p>Entry Price:</p>
-            <p>${formatDynamicPrecisionPrice(Number(entryPrice))}</p>
+            <p>${formatDynamicPrecisionPrice(Number(entryPrice) / PRICE_PRECISION)}</p>
           </div>
         </div>
       </CardContent>
@@ -203,7 +211,7 @@ export function OpenPositionList() {
   const { address, status } = useAccount();
 
   const [result] = useSubscription({
-    query: newPositionsSubscription,
+    query: openPositionsSubscription,
     variables: { owner: address || '' },
     pause: !address,
   });
