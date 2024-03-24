@@ -14,7 +14,7 @@ import {
   useBlock,
   useWaitForTransactionReceipt,
 } from 'wagmi';
-import { erc20Abi, parseEther, formatEther, encodeAbiParameters, Hex } from 'viem';
+import { erc20Abi, parseEther, formatEther } from 'viem';
 import * as tradePairAbi from '@/abi/TradePair.json';
 import { connection, subscribeToPriceFeeds, unsubscribeToPriceFeeds } from '@/lib/pyth';
 import { formatPrice, mapMarketToTradePairAddress } from '@/lib/utils';
@@ -165,101 +165,9 @@ export const Exchange = () => {
         args: [tradePairAddress, parsedCollateral],
       });
     } else {
-      let priceFeedUpdateData;
-      const timestamp = block.data?.timestamp;
-      if (import.meta.env.MODE === 'anvil') {
-        // on a local anvil chain, we use MockPyth and have to encode the data ourselves
-        priceFeedUpdateData = [
-          encodeAbiParameters(
-            [
-              {
-                components: [
-                  {
-                    internalType: 'bytes32',
-                    name: 'id',
-                    type: 'bytes32',
-                  },
-                  {
-                    components: [
-                      {
-                        internalType: 'int64',
-                        name: 'price',
-                        type: 'int64',
-                      },
-                      {
-                        internalType: 'uint64',
-                        name: 'conf',
-                        type: 'uint64',
-                      },
-                      {
-                        internalType: 'int32',
-                        name: 'expo',
-                        type: 'int32',
-                      },
-                      {
-                        internalType: 'uint64',
-                        name: 'publishTime',
-                        type: 'uint64',
-                      },
-                    ],
-                    name: 'price',
-                    type: 'tuple',
-                  },
-                  {
-                    components: [
-                      {
-                        internalType: 'int64',
-                        name: 'price',
-                        type: 'int64',
-                      },
-                      {
-                        internalType: 'uint64',
-                        name: 'conf',
-                        type: 'uint64',
-                      },
-                      {
-                        internalType: 'int32',
-                        name: 'expo',
-                        type: 'int32',
-                      },
-                      {
-                        internalType: 'uint64',
-                        name: 'publishTime',
-                        type: 'uint64',
-                      },
-                    ],
-                    name: 'emaPrice',
-                    type: 'tuple',
-                  },
-                ],
-                name: 'PriceFeed',
-                type: 'tuple',
-              },
-            ],
-            [
-              {
-                id: ('0x' + currentMarketState.priceFeedId) as Hex,
-                price: {
-                  price: BigInt(currentMarketState.price),
-                  conf: BigInt(currentMarketState.confidence),
-                  expo: currentMarketState.expo,
-                  publishTime: timestamp,
-                },
-                emaPrice: {
-                  price: BigInt(currentMarketState.price),
-                  conf: BigInt(currentMarketState.confidence),
-                  expo: currentMarketState.expo,
-                  publishTime: timestamp,
-                },
-              },
-            ]
-          ),
-        ];
-      } else {
-        priceFeedUpdateData = await connection.getPriceFeedsUpdateData([
-          currentMarketState.priceFeedId,
-        ]);
-      }
+      const priceFeedUpdateData = await connection.getPriceFeedsUpdateData([
+        currentMarketState.priceFeedId,
+      ]);
 
       writeContractOpenPosition({
         address: tradePairAddress,

@@ -4,11 +4,12 @@ import { Card, CardContent, CardFooter, CardHeader } from '../ui/card';
 import classNames from 'classnames';
 import { graphql } from '@/graphql';
 import { Address, formatEther } from 'viem';
-import { connection } from '@/lib/pyth';
+import { connection, subscribeToPriceFeeds, unsubscribeToPriceFeeds } from '@/lib/pyth';
 import * as tradePairAbi from '@/abi/TradePair.json';
 import { Button } from '../ui/button';
 import {
   formatDynamicPrecisionPrice,
+  formatPrice,
   mapMarketToAssetPath,
   mapMarketToPriceFeedId,
   mapMarketToTradePairAddress,
@@ -17,6 +18,8 @@ import {
 import { Market } from '@/types';
 import { Asset } from '../Asset';
 import { PRICE_PRECISION } from '@/lib/constants';
+import { useMarketStore } from '@/store';
+import { useEffect } from 'react';
 
 function formatUSD(value: bigint): string {
   return (
@@ -64,6 +67,7 @@ const Position = ({
   pairName,
 }: PositionProps) => {
   const { writeContract } = useWriteContract();
+  const { marketsState } = useMarketStore();
 
   const leverage = Number(size) / Number(collateral);
 
@@ -80,6 +84,12 @@ const Position = ({
       value: 1n,
     });
   };
+
+  useEffect(() => {
+    subscribeToPriceFeeds();
+    // NOTE: clean up on unmount
+    return unsubscribeToPriceFeeds;
+  }, []);
 
   return (
     <Card className="bg-glass/20 backdrop-blur-md rounded-md">
@@ -111,6 +121,10 @@ const Position = ({
           <div className="flex justify-between">
             <p>Entry Price:</p>
             <p>${formatDynamicPrecisionPrice(Number(entryPrice) / PRICE_PRECISION)}</p>
+          </div>
+          <div className="flex justify-between">
+            <p>Current Price:</p>
+            <p>{formatPrice(Number(marketsState[market]?.currentPrice))}</p>
           </div>
         </div>
       </CardContent>
