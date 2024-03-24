@@ -48,10 +48,10 @@ const closedPositionsSubscription = graphql(/* GraphQL */ `
       closePrice
       entryTimestamp
       closePrice
-      totalPnL
       pnl
       borrowFeeAmount
       fundingFeeAmount
+      totalPnL
       id
       tradePair_id
       tradePair {
@@ -67,6 +67,7 @@ interface PositionProps {
   entryPrice: number;
   closingPrice: number;
   pnl: number;
+  totalPnL: number;
   borrowFee: number;
   fundingFee: number;
   isLong: boolean;
@@ -80,6 +81,7 @@ const Position = ({
   entryPrice,
   closingPrice,
   pnl,
+  totalPnL,
   borrowFee,
   fundingFee,
   isLong,
@@ -117,18 +119,26 @@ const Position = ({
             <p>Closing Price:</p>
             <p>${formatDynamicPrecisionPrice(Number(closingPrice) / PRICE_PRECISION)}</p>
           </div>
+        </div>
+        <div className="space-y-1 pt-6">
           <div className="flex justify-between">
-            <p>Funding Fee:</p>
-            <p>{borrowFee}</p>
+            <p>PnL:</p>
+            <p>{<PNL value={BigInt(pnl)} />}</p>
           </div>
           <div className="flex justify-between">
-            <p>Funding Fee:</p>
-            <p>{fundingFee}</p>
+            <p>Funding fees:</p>
+            <p>{<PNL value={BigInt(-fundingFee)} />}</p>
+          </div>
+          <div className="flex justify-between">
+            <p>Borrow fees:</p>
+            <p>{<PNL value={BigInt(-borrowFee)} />}</p>
           </div>
         </div>
-        <div className="flex justify-between mt-6">
-          <p>Net PnL:</p>
-          <p>{<PNL value={BigInt(pnl)} />}</p>
+        <div className="space-y-1 pt-6">
+          <div className="flex justify-between">
+            <p>Net PnL:</p>
+            <p>{<PNL value={BigInt(totalPnL)} />}</p>
+          </div>
         </div>
       </CardContent>
     </Card>
@@ -167,7 +177,8 @@ export function ClosedPositionList() {
               collateral={position.collateral}
               entryPrice={position.entryPrice}
               closingPrice={position.closePrice || 0}
-              pnl={position.totalPnL || 0}
+              pnl={position.pnl || 0}
+              totalPnL={position.totalPnL || 0}
               borrowFee={position.borrowFeeAmount || 0}
               fundingFee={position.fundingFeeAmount || 0}
               isLong={position.direction === 1}
