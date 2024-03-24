@@ -37,9 +37,9 @@ const openPositionsSubscription = graphql(/* GraphQL */ `
 
 interface PositionProps {
   id: string;
-  size: string;
-  collateral: string;
-  entryPrice: string;
+  size: number;
+  collateral: number;
+  entryPrice: number;
   isLong: boolean;
 }
 
@@ -239,7 +239,7 @@ export function OpenPositionList() {
               size={position.entryVolume}
               collateral={position.collateral}
               entryPrice={position.entryPrice}
-              isLong={position.direction === '1'}
+              isLong={position.direction === 1}
             />
           ))
         ) : (

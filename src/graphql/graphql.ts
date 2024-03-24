@@ -17,7 +17,7 @@ export type Scalars = {
   contract_type: { input: any; output: any; }
   event_type: { input: any; output: any; }
   json: { input: any; output: any; }
-  numeric: { input: string; output: string; }
+  numeric: { input: number; output: number; }
   timestamp: { input: any; output: any; }
 };
 
@@ -1441,14 +1441,14 @@ export type UserPositionsSubscriptionVariables = Exact<{
 }>;
 
 
-export type UserPositionsSubscription = { __typename?: 'subscription_root', Position: Array<{ __typename?: 'Position', collateral: string, direction: string, entryVolume: string, entryPrice: string, entryTimestamp: string, closePrice?: string | null, totalPnL?: string | null, pnl?: string | null, borrowFeeAmount?: string | null, fundingFeeAmount?: string | null, id: string }> };
+export type UserPositionsSubscription = { __typename?: 'subscription_root', Position: Array<{ __typename?: 'Position', collateral: number, direction: number, entryVolume: number, entryPrice: number, entryTimestamp: number, closePrice?: number | null, totalPnL?: number | null, pnl?: number | null, borrowFeeAmount?: number | null, fundingFeeAmount?: number | null, id: string }> };
 
 export type GetPositionsSubscriptionVariables = Exact<{
   owner: Scalars['String']['input'];
 }>;
 
 
-export type GetPositionsSubscription = { __typename?: 'subscription_root', Position: Array<{ __typename?: 'Position', collateral: string, direction: string, entryVolume: string, entryPrice: string, entryTimestamp: string, id: string }> };
+export type GetPositionsSubscription = { __typename?: 'subscription_root', Position: Array<{ __typename?: 'Position', collateral: number, direction: number, entryVolume: number, entryPrice: number, entryTimestamp: number, id: string }> };
 
 
 export const UserPositionsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"subscription","name":{"kind":"Name","value":"UserPositions"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"owner"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"Position"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"where"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"owner_id"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"_eq"},"value":{"kind":"Variable","name":{"kind":"Name","value":"owner"}}}]}},{"kind":"ObjectField","name":{"kind":"Name","value":"isOpen"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"_eq"},"value":{"kind":"BooleanValue","value":false}}]}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"collateral"}},{"kind":"Field","name":{"kind":"Name","value":"direction"}},{"kind":"Field","name":{"kind":"Name","value":"entryVolume"}},{"kind":"Field","name":{"kind":"Name","value":"entryPrice"}},{"kind":"Field","name":{"kind":"Name","value":"entryTimestamp"}},{"kind":"Field","name":{"kind":"Name","value":"closePrice"}},{"kind":"Field","name":{"kind":"Name","value":"totalPnL"}},{"kind":"Field","name":{"kind":"Name","value":"pnl"}},{"kind":"Field","name":{"kind":"Name","value":"borrowFeeAmount"}},{"kind":"Field","name":{"kind":"Name","value":"fundingFeeAmount"}},{"kind":"Field","name":{"kind":"Name","value":"id"}}]}}]}}]} as unknown as DocumentNode<UserPositionsSubscription, UserPositionsSubscriptionVariables>;
