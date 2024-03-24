@@ -88,6 +88,8 @@ const Position = ({
   pairName,
   market,
 }: PositionProps) => {
+  const leverage = Number(size / collateral);
+
   return (
     <Card className="bg-glass/20 backdrop-blur-md rounded-md ">
       <CardHeader
@@ -104,12 +106,16 @@ const Position = ({
             <Asset asset={{ key: pairName, value: pairName }} path={mapMarketToAssetPath(market)} />
           </div>
           <div className="flex justify-between">
-            <p>Size:</p>
-            <p>{formatUSD(BigInt(size))}</p>
-          </div>
-          <div className="flex justify-between">
             <p>Collateral:</p>
             <p>{formatUSD(BigInt(collateral))}</p>
+          </div>
+          <div className="flex justify-between">
+            <p>Leverage:</p>
+            <p>{leverage}x</p>
+          </div>
+          <div className="flex justify-between">
+            <p>Size:</p>
+            <p>{formatUSD(BigInt(size))}</p>
           </div>
           <div className="flex justify-between">
             <p>Entry Price:</p>
