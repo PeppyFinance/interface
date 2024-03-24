@@ -11,6 +11,7 @@ import {
 } from '@/lib/utils';
 import { Market } from '@/types';
 import { Asset } from '../Asset';
+import { PRICE_PRECISION } from '@/lib/constants';
 
 function formatUSD(value: bigint): string {
   return (
@@ -101,7 +102,7 @@ const Position = ({
           </div>
           <div className="flex justify-between">
             <p>Entry Price:</p>
-            <p>${formatDynamicPrecisionPrice(Number(entryPrice))}</p>
+            <p>${formatDynamicPrecisionPrice(Number(entryPrice) / PRICE_PRECISION)}</p>
           </div>
           <div className="flex justify-between">
             <p>Funding Fee:</p>

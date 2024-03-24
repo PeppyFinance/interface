@@ -16,8 +16,7 @@ import {
 } from '@/lib/utils';
 import { Market } from '@/types';
 import { Asset } from '../Asset';
-
-const PRICE_PRECISION = 1e30;
+import { PRICE_PRECISION } from '@/lib/constants';
 
 function formatUSD(value: bigint): string {
   return (
