@@ -4,12 +4,19 @@ import { Card, CardContent, CardFooter, CardHeader } from '../ui/card';
 import classNames from 'classnames';
 import { graphql } from '@/graphql';
 import { useMarketStore } from '@/store';
-import { Hex, encodeAbiParameters, formatEther } from 'viem';
+import { Address, Hex, encodeAbiParameters, formatEther } from 'viem';
 import { connection } from '@/lib/pyth';
 import * as tradePairAbi from '@/abi/TradePair.json';
 import { Button } from '../ui/button';
-import { formatDynamicPrecisionPrice, mapMarketToTradePairAddress } from '@/lib/utils';
+import {
+  formatDynamicPrecisionPrice,
+  mapMarketToAssetPath,
+  mapMarketToTradePairAddress,
+  mapTradePairAddressToMarket,
+} from '@/lib/utils';
 import { useMemo } from 'react';
+import { Market } from '@/types';
+import { Asset } from '../Asset';
 
 const PRICE_PRECISION = 1e30;
 
@@ -31,6 +38,10 @@ const openPositionsSubscription = graphql(/* GraphQL */ `
       entryPrice
       entryTimestamp
       id
+      tradePair_id
+      tradePair {
+        name
+      }
     }
   }
 `);
@@ -41,9 +52,19 @@ interface PositionProps {
   collateral: number;
   entryPrice: number;
   isLong: boolean;
+  market: Market;
+  pairName: string;
 }
 
-const Position = ({ id, size, collateral, entryPrice, isLong }: PositionProps) => {
+const Position = ({
+  id,
+  size,
+  collateral,
+  entryPrice,
+  isLong,
+  market,
+  pairName,
+}: PositionProps) => {
   const { writeContract } = useWriteContract();
   const block = useBlock();
   const { marketsState, currentMarket } = useMarketStore();
@@ -180,6 +201,9 @@ const Position = ({ id, size, collateral, entryPrice, isLong }: PositionProps) =
       </CardHeader>
       <CardContent>
         <div className="space-y-1 pt-6">
+          <div className="mb-4">
+            <Asset asset={{ key: pairName, value: pairName }} path={mapMarketToAssetPath(market)} />
+          </div>
           <div className="flex justify-between">
             <p>Collateral:</p>
             <p>{formatUSD(BigInt(collateral))}</p>
@@ -240,6 +264,8 @@ export function OpenPositionList() {
               collateral={position.collateral}
               entryPrice={position.entryPrice}
               isLong={position.direction === 1}
+              market={mapTradePairAddressToMarket(position.tradePair_id as Address)}
+              pairName={position.tradePair?.name || ''}
             />
           ))
         ) : (

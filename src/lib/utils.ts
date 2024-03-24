@@ -53,3 +53,23 @@ export function mapMarketToTradePairAddress(market: Market): Address {
 
   return _map[market];
 }
+
+export function mapTradePairAddressToMarket(address: Address): Market {
+  const _map: Record<Address, Market> = {
+    [tradePairBtcUsdAddress]: Market.BTCUSD,
+    [tradePairEthUsdAddress]: Market.ETHUSD,
+    [tradePairIotaUsdAddress]: Market.IOTAUSD,
+  };
+
+  return _map[address];
+}
+
+export function mapMarketToAssetPath(address: Market): string {
+  const _map: Record<Market, string> = {
+    [Market.BTCUSD]: 'btc',
+    [Market.ETHUSD]: 'eth',
+    [Market.IOTAUSD]: 'iota',
+  };
+
+  return _map[address];
+}
