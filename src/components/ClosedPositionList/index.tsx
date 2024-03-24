@@ -34,12 +34,12 @@ const closedPositionsSubscription = graphql(/* GraphQL */ `
 `);
 
 interface PositionProps {
-  size: string;
-  collateral: string;
-  entryPrice: string;
-  pnl: string;
-  borrowFee: string;
-  fundingFee: string;
+  size: number;
+  collateral: number;
+  entryPrice: number;
+  pnl: number;
+  borrowFee: number;
+  fundingFee: number;
   isLong: boolean;
 }
 
@@ -78,15 +78,15 @@ const Position = ({
           </div>
           <div className="flex justify-between">
             <p>Funding Fee:</p>
-            <p>{formatUSD(BigInt(borrowFee))}</p>
+            <p>{borrowFee}</p>
           </div>
           <div className="flex justify-between">
             <p>Funding Fee:</p>
-            <p>{formatUSD(BigInt(fundingFee))}</p>
+            <p>{fundingFee}</p>
           </div>
           <div className="flex justify-between">
             <p>Net PnL:</p>
-            <p>{formatUSD(BigInt(pnl))}</p>
+            <p>{pnl}</p>
           </div>
         </div>
       </CardContent>
@@ -125,10 +125,10 @@ export function ClosedPositionList() {
               size={position.entryVolume}
               collateral={position.collateral}
               entryPrice={position.entryPrice}
-              pnl={position.totalPnL || '0'}
-              borrowFee={position.borrowFeeAmount || '0'}
-              fundingFee={position.fundingFeeAmount || '0'}
-              isLong={position.direction === '1'}
+              pnl={position.totalPnL || 0}
+              borrowFee={position.borrowFeeAmount || 0}
+              fundingFee={position.fundingFeeAmount || 0}
+              isLong={position.direction === 1}
             />
           ))
         ) : (

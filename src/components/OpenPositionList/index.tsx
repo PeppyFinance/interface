@@ -11,6 +11,7 @@ import { Button } from '../ui/button';
 import {
   formatDynamicPrecisionPrice,
   mapMarketToAssetPath,
+  mapMarketToPriceFeedId,
   mapMarketToTradePairAddress,
   mapTradePairAddressToMarket,
 } from '@/lib/utils';
@@ -66,119 +67,13 @@ const Position = ({
   pairName,
 }: PositionProps) => {
   const { writeContract } = useWriteContract();
-  const block = useBlock();
-  const { marketsState, currentMarket } = useMarketStore();
 
   const leverage = Number(size) / Number(collateral);
 
-  const tradePairAddress = useMemo(
-    () => mapMarketToTradePairAddress(currentMarket),
-    [currentMarket]
-  );
-
   const handleClose = async () => {
-    const currentMarketState = marketsState[currentMarket];
-
-    if (currentMarketState === null) {
-      // TODO: probably should log here
-      return;
-    }
-
-    let priceFeedUpdateData;
-    const timestamp = block.data?.timestamp;
-    if (import.meta.env.MODE === 'anvil') {
-      // on a local anvil chain, we use MockPyth and have to encode the data ourselves
-      priceFeedUpdateData = [
-        encodeAbiParameters(
-          [
-            {
-              components: [
-                {
-                  internalType: 'bytes32',
-                  name: 'id',
-                  type: 'bytes32',
-                },
-                {
-                  components: [
-                    {
-                      internalType: 'int64',
-                      name: 'price',
-                      type: 'int64',
-                    },
-                    {
-                      internalType: 'uint64',
-                      name: 'conf',
-                      type: 'uint64',
-                    },
-                    {
-                      internalType: 'int32',
-                      name: 'expo',
-                      type: 'int32',
-                    },
-                    {
-                      internalType: 'uint64',
-                      name: 'publishTime',
-                      type: 'uint64',
-                    },
-                  ],
-                  name: 'price',
-                  type: 'tuple',
-                },
-                {
-                  components: [
-                    {
-                      internalType: 'int64',
-                      name: 'price',
-                      type: 'int64',
-                    },
-                    {
-                      internalType: 'uint64',
-                      name: 'conf',
-                      type: 'uint64',
-                    },
-                    {
-                      internalType: 'int32',
-                      name: 'expo',
-                      type: 'int32',
-                    },
-                    {
-                      internalType: 'uint64',
-                      name: 'publishTime',
-                      type: 'uint64',
-                    },
-                  ],
-                  name: 'emaPrice',
-                  type: 'tuple',
-                },
-              ],
-              name: 'PriceFeed',
-              type: 'tuple',
-            },
-          ],
-          [
-            {
-              id: ('0x' + currentMarketState.priceFeedId) as Hex,
-              price: {
-                price: BigInt(currentMarketState.price),
-                conf: BigInt(currentMarketState.confidence),
-                expo: currentMarketState.expo,
-                publishTime: timestamp,
-              },
-              emaPrice: {
-                price: BigInt(currentMarketState.price),
-                conf: BigInt(currentMarketState.confidence),
-                expo: currentMarketState.expo,
-                publishTime: timestamp,
-              },
-            },
-          ]
-        ),
-      ];
-    } else {
-      priceFeedUpdateData = await connection.getPriceFeedsUpdateData([
-        currentMarketState.priceFeedId,
-      ]);
-    }
+    const priceFeedId = mapMarketToPriceFeedId(market);
+    const priceFeedUpdateData = await connection.getPriceFeedsUpdateData([priceFeedId]);
+    const tradePairAddress = mapMarketToTradePairAddress(market);
 
     writeContract({
       address: tradePairAddress,

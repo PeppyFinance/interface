@@ -64,12 +64,22 @@ export function mapTradePairAddressToMarket(address: Address): Market {
   return _map[address];
 }
 
-export function mapMarketToAssetPath(address: Market): string {
+export function mapMarketToAssetPath(market: Market): string {
   const _map: Record<Market, string> = {
     [Market.BTCUSD]: 'btc',
     [Market.ETHUSD]: 'eth',
     [Market.IOTAUSD]: 'iota',
   };
 
-  return _map[address];
+  return _map[market];
+}
+
+export function mapMarketToPriceFeedId(market: Market): string {
+  const _map: Record<Market, string> = {
+    [Market.BTCUSD]: 'e62df6c8b4a85fe1a67db44dc12de5db330f7ac66b72dc658afedf0f4a415b43',
+    [Market.ETHUSD]: 'ff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace',
+    [Market.IOTAUSD]: 'c7b72e5d860034288c9335d4d325da4272fe50c92ab72249d58f6cbba30e4c44',
+  };
+
+  return _map[market];
 }
