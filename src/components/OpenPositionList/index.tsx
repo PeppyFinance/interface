@@ -1,10 +1,9 @@
 import { useSubscription } from 'urql';
-import { useAccount, useBlock, useWriteContract } from 'wagmi';
+import { useAccount, useWriteContract } from 'wagmi';
 import { Card, CardContent, CardFooter, CardHeader } from '../ui/card';
 import classNames from 'classnames';
 import { graphql } from '@/graphql';
-import { useMarketStore } from '@/store';
-import { Address, Hex, encodeAbiParameters, formatEther } from 'viem';
+import { Address, formatEther } from 'viem';
 import { connection } from '@/lib/pyth';
 import * as tradePairAbi from '@/abi/TradePair.json';
 import { Button } from '../ui/button';
@@ -15,7 +14,6 @@ import {
   mapMarketToTradePairAddress,
   mapTradePairAddressToMarket,
 } from '@/lib/utils';
-import { useMemo } from 'react';
 import { Market } from '@/types';
 import { Asset } from '../Asset';
 

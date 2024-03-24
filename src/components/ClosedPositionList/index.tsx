@@ -3,8 +3,14 @@ import { useAccount } from 'wagmi';
 import { graphql } from '@/graphql';
 import { Card, CardContent, CardHeader } from '../ui/card';
 import classNames from 'classnames';
-import { formatEther } from 'viem';
-import { formatDynamicPrecisionPrice } from '@/lib/utils';
+import { Address, formatEther } from 'viem';
+import {
+  formatDynamicPrecisionPrice,
+  mapMarketToAssetPath,
+  mapTradePairAddressToMarket,
+} from '@/lib/utils';
+import { Market } from '@/types';
+import { Asset } from '../Asset';
 
 function formatUSD(value: bigint): string {
   return (
@@ -29,6 +35,10 @@ const closedPositionsSubscription = graphql(/* GraphQL */ `
       borrowFeeAmount
       fundingFeeAmount
       id
+      tradePair_id
+      tradePair {
+        name
+      }
     }
   }
 `);
@@ -41,6 +51,8 @@ interface PositionProps {
   borrowFee: number;
   fundingFee: number;
   isLong: boolean;
+  market: Market;
+  pairName: string;
 }
 
 const Position = ({
@@ -51,7 +63,19 @@ const Position = ({
   borrowFee,
   fundingFee,
   isLong,
+  pairName,
+  market,
 }: PositionProps) => {
+  console.log({
+    size,
+    collateral,
+    entryPrice,
+    pnl,
+    borrowFee,
+    fundingFee,
+    isLong,
+  });
+
   return (
     <Card className="my-6 bg-glass/20 backdrop-blur-md rounded-md ">
       <CardHeader
@@ -64,6 +88,9 @@ const Position = ({
       </CardHeader>
       <CardContent>
         <div className="space-y-1 pt-6">
+          <div className="mb-4">
+            <Asset asset={{ key: pairName, value: pairName }} path={mapMarketToAssetPath(market)} />
+          </div>
           <div className="flex justify-between">
             <p>Size:</p>
             <p>{formatUSD(BigInt(size))}</p>
@@ -129,6 +156,8 @@ export function ClosedPositionList() {
               borrowFee={position.borrowFeeAmount || 0}
               fundingFee={position.fundingFeeAmount || 0}
               isLong={position.direction === 1}
+              market={mapTradePairAddressToMarket(position.tradePair_id as Address)}
+              pairName={position.tradePair?.name || ''}
             />
           ))
         ) : (
