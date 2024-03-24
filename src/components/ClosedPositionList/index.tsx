@@ -29,6 +29,7 @@ const closedPositionsSubscription = graphql(/* GraphQL */ `
       direction
       entryVolume
       entryPrice
+      closePrice
       entryTimestamp
       closePrice
       totalPnL
@@ -48,6 +49,7 @@ interface PositionProps {
   size: number;
   collateral: number;
   entryPrice: number;
+  closingPrice: number;
   pnl: number;
   borrowFee: number;
   fundingFee: number;
@@ -60,6 +62,7 @@ const Position = ({
   size,
   collateral,
   entryPrice,
+  closingPrice,
   pnl,
   borrowFee,
   fundingFee,
@@ -67,16 +70,6 @@ const Position = ({
   pairName,
   market,
 }: PositionProps) => {
-  console.log({
-    size,
-    collateral,
-    entryPrice,
-    pnl,
-    borrowFee,
-    fundingFee,
-    isLong,
-  });
-
   return (
     <Card className="my-6 bg-glass/20 backdrop-blur-md rounded-md ">
       <CardHeader
@@ -103,6 +96,10 @@ const Position = ({
           <div className="flex justify-between">
             <p>Entry Price:</p>
             <p>${formatDynamicPrecisionPrice(Number(entryPrice) / PRICE_PRECISION)}</p>
+          </div>
+          <div className="flex justify-between">
+            <p>Closing Price:</p>
+            <p>${formatDynamicPrecisionPrice(Number(closingPrice) / PRICE_PRECISION)}</p>
           </div>
           <div className="flex justify-between">
             <p>Funding Fee:</p>
@@ -153,6 +150,7 @@ export function ClosedPositionList() {
               size={position.entryVolume}
               collateral={position.collateral}
               entryPrice={position.entryPrice}
+              closingPrice={position.closePrice || 0}
               pnl={position.totalPnL || 0}
               borrowFee={position.borrowFeeAmount || 0}
               fundingFee={position.fundingFeeAmount || 0}
