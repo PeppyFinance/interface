@@ -11,7 +11,7 @@ const Header = () => {
   const location = useLocation();
 
   return (
-    <div className="fixed z-[50] w-full bg-glass/30 shadow-default backdrop-blur-md flex justify-between px-3 py-2 h-12">
+    <div className="w-full bg-glass/30 shadow-default backdrop-blur-md flex justify-between px-3 py-2 h-12">
       <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
         <HamburgerMenuIcon className="w-7 h-full" onClick={() => setMenuOpen(true)} />
         <SheetContent side="left">
@@ -74,12 +74,12 @@ const Header = () => {
 
 export const Layout = () => {
   return (
-    <div className="tracking-widest h-full bg-[url('/background.png')] bg-center bg-cover relative">
+    <div className="tracking-widest h-screen flex flex-col bg-[url('/background.png')] bg-center bg-cover overflow-hidden">
       <Header />
-      <div className="absolute top-12 w-full">
+      <div className="flex-auto overflow-auto w-full">
         <Outlet />
-        <Toaster position="top-center" />
       </div>
+      <Toaster position="top-center" />
     </div>
   );
 };
