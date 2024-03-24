@@ -173,7 +173,7 @@ export function ClosedPositionList() {
   if (fetching) return <div>Loading...</div>;
 
   return (
-    <div className="h-full p-6">
+    <div className="p-6">
       <div className="flex flex-col space-y-4">
         {data && data?.Position.length !== 0 ? (
           data.Position.map(position => (

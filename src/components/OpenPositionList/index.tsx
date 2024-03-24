@@ -1,5 +1,5 @@
 import { useSubscription } from 'urql';
-import { useAccount, useWriteContract } from 'wagmi';
+import { useAccount, useWaitForTransactionReceipt, useWriteContract } from 'wagmi';
 import { Card, CardContent, CardFooter, CardHeader } from '../ui/card';
 import classNames from 'classnames';
 import { graphql } from '@/graphql';
@@ -19,7 +19,9 @@ import { Market } from '@/types';
 import { Asset } from '../Asset';
 import { PRICE_PRECISION } from '@/lib/constants';
 import { useMarketStore } from '@/store';
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
+import { Spinner } from '../ui/spinner';
+import { toast } from 'sonner';
 
 function formatUSD(value: bigint): string {
   return Intl.NumberFormat('en-US', {
@@ -82,8 +84,21 @@ const Position = ({
   market,
   pairName,
 }: PositionProps) => {
-  const { writeContract } = useWriteContract();
   const { marketsState } = useMarketStore();
+
+  const {
+    writeContract: writeContractClosePosition,
+    data: hashClosePosition,
+    status: statusClosePosition,
+  } = useWriteContract();
+
+  const {
+    isLoading: isConfirmingClosePosition,
+    isSuccess: closePositionConfirmed,
+    isError: closePositionNotConfirmed,
+  } = useWaitForTransactionReceipt({
+    hash: hashClosePosition,
+  });
 
   const leverage = Number(size / collateral);
 
@@ -92,7 +107,7 @@ const Position = ({
     const priceFeedUpdateData = await connection.getPriceFeedsUpdateData([priceFeedId]);
     const tradePairAddress = mapMarketToTradePairAddress(market);
 
-    writeContract({
+    writeContractClosePosition({
       address: tradePairAddress,
       abi: tradePairAbi.abi,
       functionName: 'closePosition',
@@ -101,16 +116,46 @@ const Position = ({
     });
   };
 
+  const showSpinner = useMemo(
+    () => statusClosePosition === 'pending' || isConfirmingClosePosition,
+    [statusClosePosition, isConfirmingClosePosition]
+  );
+
+  const isCloseButtonDisabled = useMemo(() => showSpinner, [showSpinner]);
+
+  const currentPrice = marketsState[market]?.currentPrice;
+  const pnl = currentPrice
+    ? BigInt(Math.round(size * (currentPrice / (entryPrice / PRICE_PRECISION) - 1)))
+    : 0n;
+
+  // TODO: this rerenders all the items all the time,
+  // perhaps we should find out how to only locally update
   useEffect(() => {
     subscribeToPriceFeeds();
     // NOTE: clean up on unmount
     return unsubscribeToPriceFeeds;
   }, []);
 
-  const currentPrice = marketsState[market]?.currentPrice;
-  const pnl = currentPrice
-    ? BigInt(Math.round(size * (currentPrice / (entryPrice / PRICE_PRECISION) - 1)))
-    : 0n;
+  useEffect(() => {
+    if (statusClosePosition === 'success') {
+      toast.info('Close Position', { description: 'Waiting for confirmation' });
+    } else if (statusClosePosition === 'error') {
+      // TODO: when user rejects tx, the error message should be more specific.
+      toast.error('Cannot close position', { description: 'Something went wrong' });
+    }
+  }, [statusClosePosition]);
+
+  useEffect(() => {
+    if (closePositionConfirmed) {
+      toast.success('Position closed');
+    }
+  }, [closePositionConfirmed]);
+
+  useEffect(() => {
+    if (closePositionNotConfirmed) {
+      toast.error('Position not closed', { description: 'Something went wrong' });
+    }
+  }, [closePositionNotConfirmed]);
 
   return (
     <Card className="bg-glass/20 backdrop-blur-md rounded-md">
@@ -156,7 +201,8 @@ const Position = ({
         </div>
       </CardContent>
       <CardFooter>
-        <Button size="default" fontSize="sm" onClick={handleClose}>
+        <Button size="default" fontSize="sm" onClick={handleClose} disabled={isCloseButtonDisabled}>
+          {showSpinner && <Spinner size="small" className="mr-2 text-foreground" />}
           Close
         </Button>
       </CardFooter>
@@ -186,7 +232,7 @@ export function OpenPositionList() {
   if (fetching) return <div>Loading...</div>;
 
   return (
-    <div className="h-full p-6">
+    <div className="p-6">
       <div className="flex flex-col space-y-4">
         {data && data.Position.length !== 0 ? (
           data.Position.map(position => (
