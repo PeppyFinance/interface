@@ -322,32 +322,19 @@ export const Exchange = () => {
             <CardTitle className="text-sm">Summary</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex justify-between">
-              <p>Leverage</p>
-              <p>{leverage}.0x</p>
-            </div>
-            <div className="flex justify-between">
-              <p>Position Size</p>
-              <p>${formatPositionSize(positionSize)}</p>
-            </div>
-            <div className="flex justify-between">
-              <p>Entry Price</p>
-              <p>{currentMarketState ? formatPrice(currentMarketState.currentPrice) : '$...'}</p>
-            </div>
-            <div className="flex justify-between">
-              <p>Liquidation Price</p>
-              <p>$2,000</p>
-            </div>
-            <div className="flex justify-between">
-              <p>Take Profit At</p>
-              <p>$3,500</p>
-            </div>
-            <div className="flex justify-between">
-              <p>Fees</p>
-              <p>$4.50</p>
-            </div>
-            <div className="mt-1">
-              <p className="underline">More</p>
+            <div className="space-y-1 pt-4">
+              <div className="flex justify-between">
+                <p>Leverage</p>
+                <p>{leverage}.0x</p>
+              </div>
+              <div className="flex justify-between">
+                <p>Position Size</p>
+                <p>${formatPositionSize(positionSize)}</p>
+              </div>
+              <div className="flex justify-between">
+                <p>Entry Price</p>
+                <p>{currentMarketState ? formatPrice(currentMarketState.currentPrice) : '$...'}</p>
+              </div>
             </div>
           </CardContent>
           <CardFooter>
