@@ -92,7 +92,7 @@ const TriggerButton = () => {
     <div className="flex w-full h-16 justify-between px-4">
       <Drawer>
         <DrawerTrigger>
-          <Asset path={chosenAsset.key} asset={chosenAsset}>
+          <Asset iconSize="lg" textSize="xl" path={chosenAsset.key} asset={chosenAsset}>
             <ChevronDown className="ml-2" />
           </Asset>
         </DrawerTrigger>
@@ -109,7 +109,7 @@ const TriggerButton = () => {
                 })}
                 onClick={() => setSelectedAsset(asset)}
               >
-                <Asset asset={asset} path={asset.key} />
+                <Asset iconSize="lg" textSize="xl" asset={asset} path={asset.key} />
               </div>
             ))}
           </ScrollArea>

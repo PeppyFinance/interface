@@ -103,7 +103,12 @@ const Position = ({
       <CardContent>
         <div className="space-y-1 pt-6">
           <div className="mb-4">
-            <Asset asset={{ key: pairName, value: pairName }} path={mapMarketToAssetPath(market)} />
+            <Asset
+              iconSize="lg"
+              textSize="lg"
+              asset={{ key: pairName, value: pairName }}
+              path={mapMarketToAssetPath(market)}
+            />
           </div>
           <div className="flex justify-between">
             <p>Collateral:</p>
