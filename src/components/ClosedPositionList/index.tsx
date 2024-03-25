@@ -62,14 +62,14 @@ const closedPositionsSubscription = graphql(/* GraphQL */ `
 `);
 
 interface PositionProps {
-  size: number;
-  collateral: number;
-  entryPrice: number;
-  closingPrice: number;
-  pnl: number;
-  totalPnL: number;
-  borrowFee: number;
-  fundingFee: number;
+  size: string;
+  collateral: string;
+  entryPrice: string;
+  closingPrice: string;
+  pnl: string;
+  totalPnL: string;
+  borrowFee: string;
+  fundingFee: string;
   isLong: boolean;
   market: Market;
   pairName: string;
@@ -88,7 +88,7 @@ const Position = ({
   pairName,
   market,
 }: PositionProps) => {
-  const leverage = Number(size / collateral);
+  const leverage = Number(size) / Number(collateral);
 
   return (
     <Card className="bg-glass/20 backdrop-blur-md rounded-md ">
@@ -182,12 +182,12 @@ export function ClosedPositionList() {
               size={position.entryVolume}
               collateral={position.collateral}
               entryPrice={position.entryPrice}
-              closingPrice={position.closePrice || 0}
-              pnl={position.pnl || 0}
-              totalPnL={position.totalPnL || 0}
-              borrowFee={position.borrowFeeAmount || 0}
-              fundingFee={position.fundingFeeAmount || 0}
-              isLong={position.direction === 1}
+              closingPrice={position.closePrice || '0'}
+              pnl={position.pnl || '0'}
+              totalPnL={position.totalPnL || '0'}
+              borrowFee={position.borrowFeeAmount || '0'}
+              fundingFee={position.fundingFeeAmount || '0'}
+              isLong={position.direction === '1'}
               market={mapTradePairAddressToMarket(position.tradePair_id as Address)}
               pairName={position.tradePair?.name || ''}
             />

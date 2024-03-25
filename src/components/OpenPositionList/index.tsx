@@ -67,9 +67,9 @@ const openPositionsSubscription = graphql(/* GraphQL */ `
 
 interface PositionProps {
   id: string;
-  size: number;
-  collateral: number;
-  entryPrice: number;
+  size: string;
+  collateral: string;
+  entryPrice: string;
   isLong: boolean;
   market: Market;
   pairName: string;
@@ -100,7 +100,7 @@ const Position = ({
     hash: hashClosePosition,
   });
 
-  const leverage = Number(size / collateral);
+  const leverage = Number(size) / Number(collateral);
 
   const handleClose = async () => {
     const priceFeedId = mapMarketToPriceFeedId(market);
@@ -125,7 +125,7 @@ const Position = ({
 
   const currentPrice = marketsState[market]?.currentPrice;
   const pnl = currentPrice
-    ? BigInt(Math.round(size * (currentPrice / (entryPrice / PRICE_PRECISION) - 1)))
+    ? BigInt(Math.round(Number(size) * (currentPrice / (Number(entryPrice) / PRICE_PRECISION) - 1)))
     : 0n;
 
   // TODO: this rerenders all the items all the time,
@@ -242,7 +242,7 @@ export function OpenPositionList() {
               size={position.entryVolume}
               collateral={position.collateral}
               entryPrice={position.entryPrice}
-              isLong={position.direction === 1}
+              isLong={position.direction === '1'}
               market={mapTradePairAddressToMarket(position.tradePair_id as Address)}
               pairName={position.tradePair?.name || ''}
             />

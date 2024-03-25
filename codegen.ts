@@ -9,7 +9,7 @@ const config: CodegenConfig = {
       preset: 'client',
       config: {
         scalars: {
-          numeric: 'number',
+          numeric: 'string',
         },
       },
     },
