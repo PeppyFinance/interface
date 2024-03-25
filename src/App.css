@@ -24,3 +24,11 @@ body {
   /* TODO: DESKTOP: remove max-width */
   max-width: 460px;
 }
+
+#content {
+  margin: 0;
+  position: absolute;
+  top: 50%;
+  -ms-transform: translateY(-50%);
+  transform: translateY(-50%);
+}
