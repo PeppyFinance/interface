@@ -2,6 +2,7 @@
 import { Toaster } from './components/ui/sonner';
 import { Topbar } from "./components/Navbar/topbar";
 import { Outlet } from 'react-router-dom';
+import { Footer } from './components/Footer/footer';
 
 export const Layout = () => {
   return (
@@ -10,6 +11,9 @@ export const Layout = () => {
       <div className="flex-auto overflow-auto w-full" id="content">
         <Outlet />
       </div>
+      <footer>
+        <Footer/>
+      </footer>
       <Toaster position="top-center" />
     </div>
   );
