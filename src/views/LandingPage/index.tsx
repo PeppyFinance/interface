@@ -17,8 +17,8 @@ export const LandingPage = () => {
                     <img src="/peppy.png" alt="Peppy Logo" className="h-[240px]" />
                   </div>
                   <Card className="bg-darkGlass/30 w-full shadow-md mt-6">
-                    <CardContent className="p-4 flex items-center text-lg font-bold">
-                      A cool Slogan that descibes Peppy in less than 10 Words.
+                    <CardContent className="p-4 flex flex-col items-center text-lg font-bold">
+                      Trade yourself to the moon with up to 100x leverage 🐸
                     </CardContent>
                   </Card>
                 </div>
