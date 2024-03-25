@@ -26,13 +26,26 @@ body {
 }
 
 #content {
-  margin: 0;
+  margin: 0px;
+  padding-top: 70px;
   position: absolute;
-  top: 50%;
-  -ms-transform: translateY(-50%);
-  transform: translateY(-50%);
+  top: 0;
 }
 footer {
   padding: 10px;
   height: 50px;
+}
+
+@media screen and (min-width: 800px) {
+  #content {
+    margin: 0px;
+    padding-top:70px;
+    position: absolute;
+    top: 50%;
+    -ms-transform: translateY(-50%);
+    transform: translateY(-50%);
+  }
+  #exchangeChart {
+    display:none;
+  }
 }
