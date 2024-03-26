@@ -199,6 +199,8 @@ export const Exchange = () => {
     if (openPositionConfirmed) {
       refetchBalance();
       refetchAllowance();
+      refetchBorrowRate();
+      refetchFundingRate();
       toast.success('Position confirmed');
     }
   }, [openPositionConfirmed]);
