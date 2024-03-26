@@ -251,7 +251,7 @@ export function OpenPositionList() {
               market={mapTradePairAddressToMarket(position.tradePair_id as Address)}
               pairName={position.tradePair?.name || ''}
             />
-          ))
+          )).reverse()
         ) : (
           <div className="px-4 py-8">No open positions.</div>
         )}
