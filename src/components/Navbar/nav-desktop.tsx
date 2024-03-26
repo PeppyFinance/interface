@@ -8,7 +8,7 @@ export const NavDesktop = () => {
       {routes.map((route) => {
         const { href, title } = route;
         return (
-          <li>
+          <li key={title}>
             <a
               href={href}
               className="flex items-center gap-1 hover:text-neutral-400 transition-all"
