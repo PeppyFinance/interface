@@ -3,40 +3,17 @@ import { useAccount } from 'wagmi';
 import { graphql } from '@/graphql';
 import { Card, CardContent, CardHeader } from '../ui/card';
 import classNames from 'classnames';
-import { Address, formatEther } from 'viem';
+import { Address } from 'viem';
 import {
   formatDynamicPrecisionPrice,
+  formatUSD,
   mapMarketToAssetPath,
   mapTradePairAddressToMarket,
 } from '@/lib/utils';
 import { Market } from '@/types';
 import { Asset } from '../Asset';
 import { PRICE_PRECISION } from '@/lib/constants';
-
-function formatUSD(value: bigint): string {
-  return Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(Number(formatEther(value)));
-}
-
-const PNL = ({ value }: { value: bigint }) => {
-  const isNegative = value < 0n;
-  const pnl = formatUSD(value);
-
-  return (
-    <span
-      className={classNames({
-        'text-constructive': !isNegative,
-        'text-destructive': isNegative,
-      })}
-    >
-      {pnl}
-    </span>
-  );
-};
+import { Pnl } from '../Pnl';
 
 const closedPositionsSubscription = graphql(/* GraphQL */ `
   subscription UserPositions($owner: String!) {
@@ -134,21 +111,21 @@ const Position = ({
         <div className="space-y-1 pt-6">
           <div className="flex justify-between">
             <p>PnL:</p>
-            <p>{<PNL value={BigInt(pnl)} />}</p>
+            <p>{<Pnl value={BigInt(pnl)} />}</p>
           </div>
           <div className="flex justify-between">
             <p>Funding fees:</p>
-            <p>{<PNL value={BigInt(-fundingFee)} />}</p>
+            <p>{<Pnl value={BigInt(-fundingFee)} />}</p>
           </div>
           <div className="flex justify-between">
             <p>Borrow fees:</p>
-            <p>{<PNL value={BigInt(-borrowFee)} />}</p>
+            <p>{<Pnl value={BigInt(-borrowFee)} />}</p>
           </div>
         </div>
         <div className="space-y-1 pt-6">
           <div className="flex justify-between">
             <p>Net PnL:</p>
-            <p>{<PNL value={BigInt(totalPnL)} />}</p>
+            <p>{<Pnl value={BigInt(totalPnL)} />}</p>
           </div>
         </div>
       </CardContent>
