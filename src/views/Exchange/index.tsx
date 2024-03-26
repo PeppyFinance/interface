@@ -22,6 +22,8 @@ import { useMarketStore } from '@/store';
 import { DollarMask } from '@/lib/masks';
 import { Spinner } from '@/components/ui/spinner';
 import { toast } from 'sonner';
+import TradePairAbi from '@/abi/TradePair.abi';
+import { Rate } from '@/components/Rate';
 
 function parseCollateral(collateralString: string): bigint {
   return BigInt(collateralString.replaceAll('$', '').replaceAll(',', '').replaceAll(' ', ''));
@@ -67,8 +69,6 @@ export const Exchange = () => {
   const [leverage, setLeverage] = useState<number>(2);
   const [direction, setDirection] = useState<1 | -1>(1);
 
-  const block = useBlock();
-
   const tradePairAddress = useMemo(
     () => mapMarketToTradePairAddress(currentMarket),
     [currentMarket]
@@ -83,17 +83,6 @@ export const Exchange = () => {
     [parsedCollateral, leverage]
   );
 
-  // useEffect(() => {
-  //   writeContract({
-  //     address: collateralTokenAddress,
-  //     abi: parseAbi(['function mint(uint256 _amount)']),
-  //     functionName: 'mint',
-  //     args: [parseEther('1000000')],
-  //   });
-  // }, []);
-  //
-  // console.log(error);
-
   const { data: balance, refetch: refetchBalance } = useReadContract({
     address: collateralTokenAddress,
     abi: erc20Abi,
@@ -106,6 +95,18 @@ export const Exchange = () => {
     abi: erc20Abi,
     functionName: 'allowance',
     args: [address, tradePairAddress],
+  });
+
+  const { data: fundingRate, refetch: refetchFundingRate } = useReadContract({
+    address: tradePairAddress,
+    abi: TradePairAbi,
+    functionName: 'getFundingRate',
+  });
+
+  const { data: borrowRate, refetch: refetchBorrowRate } = useReadContract({
+    address: tradePairAddress,
+    abi: TradePairAbi,
+    functionName: 'getBorrowRate',
   });
 
   const hasEnoughBalance = useMemo(
@@ -237,6 +238,15 @@ export const Exchange = () => {
     }
   }, [statusOpenPosition]);
 
+  useEffect(() => {
+    const id = setInterval(() => {
+      refetchBorrowRate();
+      refetchFundingRate();
+    }, 10000);
+
+    return () => clearInterval(id);
+  }, []);
+
   return (
     <div className="px-3 flex flex-col">
       <div className="pt-3">
@@ -334,6 +344,18 @@ export const Exchange = () => {
               <div className="flex justify-between">
                 <p>Entry Price</p>
                 <p>{currentMarketState ? formatPrice(currentMarketState.currentPrice) : '$...'}</p>
+              </div>
+              <div className="flex justify-between">
+                <p>Borrow Rate:</p>
+                <p>
+                  <Rate value={borrowRate} />
+                </p>
+              </div>
+              <div className="flex justify-between">
+                <p>Funding Rate:</p>
+                <p>
+                  <Rate value={fundingRate} />
+                </p>
               </div>
             </div>
           </CardContent>

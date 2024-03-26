@@ -29,6 +29,7 @@ import { toast } from 'sonner';
 import { Asset } from '@/components/Asset';
 import { mapMarketToAssetPath } from '@/lib/utils';
 import { Market } from '@/types';
+import { Rate } from '@/components/Rate';
 
 function parseUsdString(str: string): bigint {
   return BigInt(str.replaceAll('$', '').replaceAll(',', '').replaceAll(' ', '')) * BigInt(1e18);
@@ -37,22 +38,6 @@ function parseUsdString(str: string): bigint {
 function parseLpString(str: string): bigint {
   return BigInt(str.replaceAll('PLP', '').replaceAll(',', '').replaceAll(' ', '')) * BigInt(1e18);
 }
-
-const Rate = ({ value }: { value: bigint | undefined }) => {
-  // Assuming 1e6 is equivalent to 100%
-  const hundredPercent = 1e6;
-  const percentage = (Number(value) / hundredPercent) * 100;
-
-  return (
-    <span>
-      {value === undefined ? (
-        <span>...</span>
-      ) : (
-        <span className="text-destructive">{'-' + percentage.toFixed(4) + ' %/h'}</span>
-      )}
-    </span>
-  );
-};
 
 export const Pool = () => {
   const { address, status: statusAccount } = useAccount();
