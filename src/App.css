@@ -21,10 +21,12 @@ body {
 
 #content {
   margin: 0px;
-  padding-top: 70px;
+  margin-top: 70px;
+  padding-top: 0px;
   position: absolute;
   top: 0;
 }
+
 footer {
   padding: 10px;
   height: 50px;
@@ -39,6 +41,9 @@ footer {
     -ms-transform: translateY(-50%);
     transform: translateY(-50%);
   }
+}
+
+@media screen and (max-width: 800px)   {
   #exchangeChart {
     display:none;
   }

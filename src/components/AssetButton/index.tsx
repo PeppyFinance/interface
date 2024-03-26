@@ -132,7 +132,7 @@ const TriggerButton = () => {
         <DrawerTrigger>
           <div className="flex flex-col items-center justify-center">
             <p className="text-lg">{assetPrice ? formatPrice(assetPrice) : '$ ...'}</p>
-            <p className="text-xxs underline">observe in graph</p>
+            <p className="text-xxs underline md:hidden lg:hidden">observe in graph</p>
           </div>
         </DrawerTrigger>
         <DrawerContent className="h-[80%]">

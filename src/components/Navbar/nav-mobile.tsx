@@ -37,7 +37,7 @@ export const NavMobile = () => {
           {routes.map((route) => {
             const { href, title } = route;
             return (
-              <Link
+              <Link key={title}
                 className={classNames('rounded-md p-3', {
                   'bg-glass/20': location.pathname === '{href}',
                 })}

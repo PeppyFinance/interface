@@ -1,9 +1,3 @@
-import SendIcon from "../../assets/send.svg";
-import TwitterIcon from "../../assets/twitter.svg";
-import LinkedIcon from "../../assets/linkedin.svg";
-import GithubIcon from "../../assets/github.svg";
-import DiscordIcon from "../../assets/discord.svg";
-import { Title } from "@radix-ui/react-dialog";
 
 const icons = [
   {
@@ -45,7 +39,7 @@ export const Footer = () => {
         {icons.map((route) => {
             const { title, href, icon } = route;
             return (
-              <li>
+              <li key={title}>
                 <a href={href} target="_blank" title={title} className="">
                   <img src={icon}/>
                 </a>
