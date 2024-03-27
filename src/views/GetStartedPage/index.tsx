@@ -18,11 +18,11 @@ export const GetStartedPage = () => {
 
   const maxMintable = 100_000;
 
-  const parsedMinted = minted ? (minted / BigInt(1e18)).toLocaleString() : '...';
+  const parsedMinted = minted !== undefined ? (minted / BigInt(1e18)).toLocaleString() : '...';
 
   const parsedMaxMintable = maxMintable.toLocaleString();
 
-  const remainingMintable = minted ? BigInt(maxMintable) - minted / BigInt(1e18) : 0n;
+  const remainingMintable = minted !== undefined ? BigInt(maxMintable) - minted / BigInt(1e18) : 0n;
 
   const {
     writeContract: mintTokens,
