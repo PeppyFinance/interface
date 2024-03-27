@@ -11,7 +11,7 @@ const Header = () => {
   const location = useLocation();
 
   return (
-    <div className="w-full bg-glass/30 shadow-default backdrop-blur-md flex justify-between px-3 py-2 h-12">
+    <div className="w-full bg-glass/30 shadow-default backdrop-blur-md flex justify-between px-3 py-2 max-[500px]:h-12 min-[500px]:h-[56px]">
       <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
         <HamburgerMenuIcon className="w-7 h-full" onClick={() => setMenuOpen(true)} />
         <SheetContent className="max-w-[360px]" side="left">
