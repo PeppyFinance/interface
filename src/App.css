@@ -12,9 +12,15 @@ body {
   font-style: normal;
   font-weight: 400;
   line-height: normal;
+
+  /* TODO: DESKTOP: remove max-width */
+  max-width: 460px;
 }
 
 #root {
   margin: 0;
   height: 100%;
+
+  /* TODO: DESKTOP: remove max-width */
+  max-width: 460px;
 }

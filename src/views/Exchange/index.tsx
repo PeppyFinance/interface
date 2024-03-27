@@ -6,7 +6,7 @@ import { Slider } from '@/components/ui/slider';
 import { InfoCircledIcon } from '@radix-ui/react-icons';
 import { useEffect, useMemo, useState } from 'react';
 import { useMaskito } from '@maskito/react';
-import { collateralTokenAddress } from '@/lib/addresses';
+import { collateralTokenAddress, liquidityPoolAddress } from '@/lib/addresses';
 import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
 import { erc20Abi, parseEther, formatEther } from 'viem';
 import * as tradePairAbi from '@/abi/TradePair.json';
@@ -18,6 +18,7 @@ import { Spinner } from '@/components/ui/spinner';
 import { toast } from 'sonner';
 import TradePairAbi from '@/abi/TradePair.abi';
 import { Rate } from '@/components/Rate';
+import LiquidityPoolAbi from '@/abi/LiquidityPool.abi';
 
 const LEVERAGE_PRECISION = 1e1;
 
@@ -41,7 +42,6 @@ export const Exchange = () => {
     writeContract: writeContractOpenPosition,
     data: hashOpenPosition,
     status: statusOpenPosition,
-    error: errorOpenPosition,
   } = useWriteContract();
   const {
     writeContract: writeContractApprove,
@@ -112,6 +112,12 @@ export const Exchange = () => {
     functionName: 'getBorrowRate',
   });
 
+  const { data: totalLiquidity, refetch: refetchTotalLiqudity } = useReadContract({
+    address: liquidityPoolAddress,
+    abi: LiquidityPoolAbi,
+    functionName: 'totalAssets',
+  });
+
   const hasEnoughBalance = useMemo(
     () => balance !== undefined && balance >= parsedCollateral,
     [balance, parsedCollateral]
@@ -120,6 +126,11 @@ export const Exchange = () => {
   const hasEnoughAllowance = useMemo(
     () => allowance !== undefined && allowance >= parsedCollateral,
     [allowance, parsedCollateral]
+  );
+
+  const exceedsAvailableLiquidity = useMemo(
+    () => totalLiquidity && positionSize > totalLiquidity,
+    [positionSize, totalLiquidity]
   );
 
   const hasSufficientSize = useMemo(() => positionSize > 0n, [positionSize]);
@@ -134,7 +145,9 @@ export const Exchange = () => {
             ? 'Not enough funds'
             : !hasEnoughAllowance
               ? 'Approve'
-              : 'Open Position',
+              : exceedsAvailableLiquidity
+                ? 'Not enough liqudity'
+                : 'Open Position',
     [hasSufficientSize, hasEnoughBalance, hasEnoughAllowance, statusAccount]
   );
 
@@ -213,6 +226,7 @@ export const Exchange = () => {
       refetchAllowance();
       refetchBorrowRate();
       refetchFundingRate();
+      refetchTotalLiqudity();
       toast.success('Position confirmed');
     }
   }, [openPositionConfirmed]);
@@ -256,6 +270,7 @@ export const Exchange = () => {
     const id = setInterval(() => {
       refetchBorrowRate();
       refetchFundingRate();
+      refetchTotalLiqudity();
     }, 10000);
 
     return () => clearInterval(id);
@@ -374,6 +389,14 @@ export const Exchange = () => {
                 <p>Funding Rate:</p>
                 <p>
                   <Rate value={fundingRate} />
+                </p>
+              </div>
+              <div className="flex justify-between">
+                <p>Available Liquidity</p>
+                <p>
+                  {totalLiquidity !== undefined
+                    ? '$' + (totalLiquidity / BigInt(1e18)).toLocaleString()
+                    : '-'}
                 </p>
               </div>
             </div>

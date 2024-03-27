@@ -14,7 +14,7 @@ const Header = () => {
     <div className="w-full bg-glass/30 shadow-default backdrop-blur-md flex justify-between px-3 py-2 h-12">
       <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
         <HamburgerMenuIcon className="w-7 h-full" onClick={() => setMenuOpen(true)} />
-        <SheetContent side="left">
+        <SheetContent className="max-w-[360px]" side="left">
           <SheetHeader>
             <SheetTitle>Menu</SheetTitle>
           </SheetHeader>
