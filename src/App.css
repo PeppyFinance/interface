@@ -25,6 +25,7 @@ body {
 }
 
 #topbar {
+  z-index: 1000;
   max-width: 460px;
 }
 #content {
