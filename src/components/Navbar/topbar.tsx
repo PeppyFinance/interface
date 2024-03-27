@@ -8,7 +8,7 @@ import { NavMobile } from "./nav-mobile";
 
 export const Topbar = () => {
   return (
-    <div className="fixed top-0 left-0 right-0 bg-glass/30 shadow-default drop-blur-md" id="topbar">
+    <div className="w-full bg-glass/30 shadow-default backdrop-blur-md flex justify-between px-3 py-2 max-[500px]:h-12 min-[500px]:h-[56px]" id="topbar">
       <nav className="container flex items-center justify-between w-full py-1 lg:py-2">
         <div className="flex justify-between w-full">
           <NavMobile />
