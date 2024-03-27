@@ -4,4 +4,4 @@ export const tradePairEthUsdAddress = '0x2DbD1b34b66CC372e34E1bDD00C65e7109E195E
 export const tradePairBtcUsdAddress = '0x6Ef16cBbD8a8D0575C426bC3cb621e2cb509c764';
 export const liquidityPoolAddress = '0xcF6a0D55E32F9B51b6B8cF1ADC4e056e0CAae5e8';
 export const collateralTokenAddress = '0xB24cABB790C2C86C5372988614B5CB30005eeb8E';
-export const pythAddress = '0x0000000000000000000000000000000000000000';
+export const pythAddress = '0x8D254a21b3C86D32F7179855531CE99164721933';

@@ -9,14 +9,13 @@ import { useMaskito } from '@maskito/react';
 import { collateralTokenAddress, liquidityPoolAddress } from '@/lib/addresses';
 import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
 import { erc20Abi, parseEther, formatEther } from 'viem';
-import * as tradePairAbi from '@/abi/TradePair.json';
+import TradePairAbi from '@/abi/TradePair.abi';
 import { connection, subscribeToPriceFeeds, unsubscribeToPriceFeeds } from '@/lib/pyth';
 import { formatPrice, mapMarketToTradePairAddress } from '@/lib/utils';
 import { useMarketStore } from '@/store';
 import { DollarMask } from '@/lib/masks';
 import { Spinner } from '@/components/ui/spinner';
 import { toast } from 'sonner';
-import TradePairAbi from '@/abi/TradePair.abi';
 import { Rate } from '@/components/Rate';
 import LiquidityPoolAbi from '@/abi/LiquidityPool.abi';
 
@@ -197,9 +196,10 @@ export const Exchange = () => {
 
       writeContractOpenPosition({
         address: tradePairAddress,
-        abi: tradePairAbi.abi,
+        abi: TradePairAbi,
         functionName: 'openPosition',
-        args: [parsedCollateral, leverage * 1_000_000, direction, priceFeedUpdateData],
+        args: [parsedCollateral, BigInt(leverage * 1_000_000), direction, priceFeedUpdateData],
+        value: 1n,
       });
     }
   };

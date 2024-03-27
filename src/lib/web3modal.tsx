@@ -2,7 +2,7 @@ import { createWeb3Modal } from '@web3modal/wagmi/react';
 import { defaultWagmiConfig } from '@web3modal/wagmi/react/config';
 
 import { http } from 'wagmi';
-import { foundry, shimmer, shimmerTestnet } from 'wagmi/chains';
+import { shimmerTestnet } from 'wagmi/chains';
 
 const projectId = '0469e6137f22c487ae982990c50111c5';
 
