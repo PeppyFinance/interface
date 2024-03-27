@@ -40,7 +40,7 @@ export function formatPrice(price: number): string {
     style: 'currency',
     currency: 'USD',
     minimumFractionDigits: 2,
-    maximumFractionDigits: 99,
+    maximumFractionDigits: 20,
   }).format(Number(formatDynamicPrecisionPrice(price)));
 }
 
