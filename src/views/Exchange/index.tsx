@@ -7,13 +7,7 @@ import { InfoCircledIcon } from '@radix-ui/react-icons';
 import { useEffect, useMemo, useState } from 'react';
 import { useMaskito } from '@maskito/react';
 import { collateralTokenAddress } from '@/lib/addresses';
-import {
-  useAccount,
-  useReadContract,
-  useWriteContract,
-  useBlock,
-  useWaitForTransactionReceipt,
-} from 'wagmi';
+import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
 import { erc20Abi, parseEther, formatEther } from 'viem';
 import * as tradePairAbi from '@/abi/TradePair.json';
 import { connection, subscribeToPriceFeeds, unsubscribeToPriceFeeds } from '@/lib/pyth';
@@ -22,13 +16,21 @@ import { useMarketStore } from '@/store';
 import { DollarMask } from '@/lib/masks';
 import { Spinner } from '@/components/ui/spinner';
 import { toast } from 'sonner';
+import TradePairAbi from '@/abi/TradePair.abi';
+import { Rate } from '@/components/Rate';
+
+const LEVERAGE_PRECISION = 1e1;
 
 function parseCollateral(collateralString: string): bigint {
   return BigInt(collateralString.replaceAll('$', '').replaceAll(',', '').replaceAll(' ', ''));
 }
 
 function formatPositionSize(positionSize: bigint): string {
-  return new Intl.NumberFormat().format(BigInt(formatEther(positionSize))).toString();
+  return new Intl.NumberFormat()
+    .format(
+      BigInt(formatEther(positionSize * BigInt(LEVERAGE_PRECISION))) / BigInt(LEVERAGE_PRECISION)
+    )
+    .toString();
 }
 
 export const Exchange = () => {
@@ -39,6 +41,7 @@ export const Exchange = () => {
     writeContract: writeContractOpenPosition,
     data: hashOpenPosition,
     status: statusOpenPosition,
+    error: errorOpenPosition,
   } = useWriteContract();
   const {
     writeContract: writeContractApprove,
@@ -67,7 +70,7 @@ export const Exchange = () => {
   const [leverage, setLeverage] = useState<number>(2);
   const [direction, setDirection] = useState<1 | -1>(1);
 
-  const block = useBlock();
+  const isLong = direction === 1;
 
   const tradePairAddress = useMemo(
     () => mapMarketToTradePairAddress(currentMarket),
@@ -79,20 +82,9 @@ export const Exchange = () => {
     [collateral]
   );
   const positionSize = useMemo(
-    () => parsedCollateral * BigInt(leverage),
+    () => (parsedCollateral * BigInt(leverage * LEVERAGE_PRECISION)) / BigInt(LEVERAGE_PRECISION),
     [parsedCollateral, leverage]
   );
-
-  // useEffect(() => {
-  //   writeContract({
-  //     address: collateralTokenAddress,
-  //     abi: parseAbi(['function mint(uint256 _amount)']),
-  //     functionName: 'mint',
-  //     args: [parseEther('1000000')],
-  //   });
-  // }, []);
-  //
-  // console.log(error);
 
   const { data: balance, refetch: refetchBalance } = useReadContract({
     address: collateralTokenAddress,
@@ -106,6 +98,18 @@ export const Exchange = () => {
     abi: erc20Abi,
     functionName: 'allowance',
     args: [address, tradePairAddress],
+  });
+
+  const { data: fundingRate, refetch: refetchFundingRate } = useReadContract({
+    address: tradePairAddress,
+    abi: TradePairAbi,
+    functionName: 'getFundingRate',
+  });
+
+  const { data: borrowRate, refetch: refetchBorrowRate } = useReadContract({
+    address: tradePairAddress,
+    abi: TradePairAbi,
+    functionName: 'getBorrowRate',
   });
 
   const hasEnoughBalance = useMemo(
@@ -151,6 +155,15 @@ export const Exchange = () => {
   const isInputDisabled = useMemo(() => showSpinner, [showSpinner]);
 
   const currentMarketState = marketsState[currentMarket];
+
+  const liquidationPrice = useMemo(() => {
+    if (!currentMarketState || positionSize === 0n) {
+      return 0;
+    }
+
+    const entryPrice = currentMarketState.currentPrice;
+    return entryPrice * (1 + ((isLong ? -1 : 1) * Number(parsedCollateral)) / Number(positionSize));
+  }, [currentMarketState, parsedCollateral, leverage]);
 
   const handleOpenPosition = async () => {
     if (!currentMarketState) {
@@ -198,6 +211,8 @@ export const Exchange = () => {
     if (openPositionConfirmed) {
       refetchBalance();
       refetchAllowance();
+      refetchBorrowRate();
+      refetchFundingRate();
       toast.success('Position confirmed');
     }
   }, [openPositionConfirmed]);
@@ -237,6 +252,15 @@ export const Exchange = () => {
     }
   }, [statusOpenPosition]);
 
+  useEffect(() => {
+    const id = setInterval(() => {
+      refetchBorrowRate();
+      refetchFundingRate();
+    }, 10000);
+
+    return () => clearInterval(id);
+  }, []);
+
   return (
     <div className="px-3 flex flex-col">
       <div className="pt-3">
@@ -261,7 +285,7 @@ export const Exchange = () => {
             fontSize="default"
             fontWeight="medium"
             size="lg"
-            variant={direction === 1 ? 'constructive' : 'default'}
+            variant={isLong ? 'constructive' : 'default'}
             onClick={() => setDirection(1)}
           >
             LONG
@@ -271,7 +295,7 @@ export const Exchange = () => {
             fontSize="default"
             fontWeight="medium"
             size="lg"
-            variant={direction === -1 ? 'destructive' : 'default'}
+            variant={!isLong ? 'destructive' : 'default'}
             onClick={() => setDirection(-1)}
           >
             SHORT
@@ -311,7 +335,8 @@ export const Exchange = () => {
         </div>
         <Slider
           value={leverage}
-          step={1}
+          step={1 / LEVERAGE_PRECISION}
+          min={1.1}
           max={100}
           onChange={e => setLeverage(Number(e.target.value))}
         />
@@ -325,7 +350,7 @@ export const Exchange = () => {
             <div className="space-y-1 pt-4">
               <div className="flex justify-between">
                 <p>Leverage</p>
-                <p>{leverage}.0x</p>
+                <p>{leverage}x</p>
               </div>
               <div className="flex justify-between">
                 <p>Position Size</p>
@@ -335,6 +360,22 @@ export const Exchange = () => {
                 <p>Entry Price</p>
                 <p>{currentMarketState ? formatPrice(currentMarketState.currentPrice) : '$...'}</p>
               </div>
+              <div className="flex justify-between">
+                <p>Liquidation Price</p>
+                <p>{liquidationPrice ? formatPrice(liquidationPrice) : '-'}</p>
+              </div>
+              <div className="flex justify-between">
+                <p>Borrow Rate:</p>
+                <p>
+                  <Rate value={borrowRate} />
+                </p>
+              </div>
+              <div className="flex justify-between">
+                <p>Funding Rate:</p>
+                <p>
+                  <Rate value={fundingRate} />
+                </p>
+              </div>
             </div>
           </CardContent>
           <CardFooter>
@@ -343,7 +384,7 @@ export const Exchange = () => {
               className="w-full mr-2"
               fontWeight="heavy"
               size="lg"
-              variant={direction === 1 ? 'constructive' : 'destructive'}
+              variant={isLong ? 'constructive' : 'destructive'}
               onClick={handleOpenPosition}
             >
               {showSpinner && <Spinner size="small" className="mr-2 text-foreground" />}

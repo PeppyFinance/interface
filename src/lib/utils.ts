@@ -1,7 +1,7 @@
 import { Market } from '@/types';
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import { Address } from 'viem';
+import { Address, formatEther } from 'viem';
 import {
   tradePairBtcUsdAddress,
   tradePairEthUsdAddress,
@@ -42,6 +42,15 @@ export function formatPrice(price: number): string {
     minimumFractionDigits: 2,
     maximumFractionDigits: 99,
   }).format(Number(formatDynamicPrecisionPrice(price)));
+}
+
+export function formatUSD(value: bigint): string {
+  return Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(Number(formatEther(value)));
 }
 
 export function mapMarketToTradePairAddress(market: Market): Address {

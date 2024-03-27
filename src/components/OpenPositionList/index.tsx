@@ -3,13 +3,14 @@ import { useAccount, useWaitForTransactionReceipt, useWriteContract } from 'wagm
 import { Card, CardContent, CardFooter, CardHeader } from '../ui/card';
 import classNames from 'classnames';
 import { graphql } from '@/graphql';
-import { Address, formatEther } from 'viem';
+import { Address } from 'viem';
 import { connection, subscribeToPriceFeeds, unsubscribeToPriceFeeds } from '@/lib/pyth';
 import * as tradePairAbi from '@/abi/TradePair.json';
 import { Button } from '../ui/button';
 import {
   formatDynamicPrecisionPrice,
   formatPrice,
+  formatUSD,
   mapMarketToAssetPath,
   mapMarketToPriceFeedId,
   mapMarketToTradePairAddress,
@@ -22,31 +23,7 @@ import { useMarketStore } from '@/store';
 import { useEffect, useMemo } from 'react';
 import { Spinner } from '../ui/spinner';
 import { toast } from 'sonner';
-
-function formatUSD(value: bigint): string {
-  return Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(Number(formatEther(value)));
-}
-
-const PNL = ({ value }: { value: bigint }) => {
-  const isNegative = value < 0n;
-  const pnl = formatUSD(value);
-
-  return (
-    <span
-      className={classNames({
-        'text-constructive': !isNegative,
-        'text-destructive': isNegative,
-      })}
-    >
-      {pnl}
-    </span>
-  );
-};
+import { Pnl } from '../Pnl';
 
 const openPositionsSubscription = graphql(/* GraphQL */ `
   subscription getPositions($owner: String!) {
@@ -125,7 +102,8 @@ const Position = ({
 
   const currentPrice = marketsState[market]?.currentPrice;
   const pnl = currentPrice
-    ? BigInt(Math.round(Number(size) * (currentPrice / (Number(entryPrice) / PRICE_PRECISION) - 1)))
+    ? (isLong ? 1n : -1n) *
+    BigInt(Math.round(Number(size) * (currentPrice / (Number(entryPrice) / PRICE_PRECISION) - 1)))
     : 0n;
 
   // TODO: this rerenders all the items all the time,
@@ -170,7 +148,12 @@ const Position = ({
       <CardContent>
         <div className="space-y-1 pt-6">
           <div className="mb-4">
-            <Asset asset={{ key: pairName, value: pairName }} path={mapMarketToAssetPath(market)} />
+            <Asset
+              iconSize="lg"
+              textSize="lg"
+              asset={{ key: pairName, value: pairName }}
+              path={mapMarketToAssetPath(market)}
+            />
           </div>
           <div className="flex justify-between">
             <p>Collateral:</p>
@@ -196,7 +179,7 @@ const Position = ({
         <div className="flex justify-between mt-6">
           <p>Current PnL:</p>
           <p>
-            <PNL value={pnl} />
+            <Pnl value={pnl} />
           </p>
         </div>
       </CardContent>
@@ -246,7 +229,7 @@ export function OpenPositionList() {
               market={mapTradePairAddressToMarket(position.tradePair_id as Address)}
               pairName={position.tradePair?.name || ''}
             />
-          ))
+          )).reverse()
         ) : (
           <div className="px-4 py-8">No open positions.</div>
         )}

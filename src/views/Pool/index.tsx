@@ -1,6 +1,13 @@
-import { collateralTokenAddress, liquidityPoolAddress } from '@/lib/addresses';
+import {
+  collateralTokenAddress,
+  liquidityPoolAddress,
+  tradePairBtcUsdAddress,
+  tradePairEthUsdAddress,
+  tradePairIotaUsdAddress,
+} from '@/lib/addresses';
 import { useAccount, useReadContract, useWriteContract } from 'wagmi';
 import LiquidityPoolAbi from '@/abi/LiquidityPool.abi.ts';
+import TradePairAbi from '@/abi/TradePair.abi';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import {
@@ -19,6 +26,10 @@ import { erc20Abi } from 'viem';
 import { useWaitForTransactionReceipt } from 'wagmi';
 import { Spinner } from '@/components/ui/spinner';
 import { toast } from 'sonner';
+import { Asset } from '@/components/Asset';
+import { mapMarketToAssetPath } from '@/lib/utils';
+import { Market } from '@/types';
+import { Rate } from '@/components/Rate';
 
 function parseUsdString(str: string): bigint {
   return BigInt(str.replaceAll('$', '').replaceAll(',', '').replaceAll(' ', '')) * BigInt(1e18);
@@ -133,6 +144,38 @@ export const Pool = () => {
     abi: erc20Abi,
     functionName: 'allowance',
     args: [address, liquidityPoolAddress],
+  });
+
+  // TODO: batch this up via multicall or serve via custom API
+  const { data: iotaFundingRate, refetch: refetchIotaFundingRate } = useReadContract({
+    address: tradePairIotaUsdAddress,
+    abi: TradePairAbi,
+    functionName: 'getFundingRate',
+  });
+  const { data: btcFundingRate, refetch: refetchBtcFundingRate } = useReadContract({
+    address: tradePairBtcUsdAddress,
+    abi: TradePairAbi,
+    functionName: 'getFundingRate',
+  });
+  const { data: ethFundingRate, refetch: refetchEthFundingRate } = useReadContract({
+    address: tradePairEthUsdAddress,
+    abi: TradePairAbi,
+    functionName: 'getFundingRate',
+  });
+  const { data: iotaBorrowRate, refetch: refetchIotaBorrowRate } = useReadContract({
+    address: tradePairIotaUsdAddress,
+    abi: TradePairAbi,
+    functionName: 'getBorrowRate',
+  });
+  const { data: btcBorrowRate, refetch: refetchBtcBorrowRate } = useReadContract({
+    address: tradePairBtcUsdAddress,
+    abi: TradePairAbi,
+    functionName: 'getBorrowRate',
+  });
+  const { data: ethBorrowRate, refetch: refetchEthBorrowRate } = useReadContract({
+    address: tradePairEthUsdAddress,
+    abi: TradePairAbi,
+    functionName: 'getBorrowRate',
   });
 
   const maxDepositAmount = useMemo(() => {
@@ -356,9 +399,22 @@ export const Pool = () => {
     }
   }, [statusRedeem]);
 
+  useEffect(() => {
+    const id = setInterval(() => {
+      refetchIotaBorrowRate();
+      refetchIotaFundingRate();
+      refetchBtcBorrowRate();
+      refetchBtcFundingRate();
+      refetchEthFundingRate();
+      refetchEthBorrowRate();
+    }, 10000);
+
+    return () => clearInterval(id);
+  }, []);
+
   return (
-    <div className="flex flex-col items-center">
-      <Card className="my-6 bg-glass/20 backdrop-blur-md rounded-md w-[90%]">
+    <div className="flex flex-col items-center my-6 space-y-4">
+      <Card className="bg-glass/20 backdrop-blur-md rounded-md w-[90%]">
         <CardHeader className="pb-6">
           <CardTitle>Liquidity Pool Stats</CardTitle>
         </CardHeader>
@@ -399,16 +455,6 @@ export const Pool = () => {
                   {ownedShares !== undefined ? (ownedShares / BigInt(1e18)).toLocaleString() : '-'}{' '}
                   PLP
                 </p>
-              </div>
-            </div>
-            <div>
-              <div className="flex justify-between">
-                <p>Borrow Rate:</p>
-                <p>0% / h</p>
-              </div>
-              <div className="flex justify-between">
-                <p>Funding Rate:</p>
-                <p>0% / h</p>
               </div>
             </div>
           </div>
@@ -533,6 +579,75 @@ export const Pool = () => {
             </Drawer>
           </div>
         </CardFooter>
+      </Card>
+      <Card className="bg-glass/20 backdrop-blur-md rounded-md w-[90%]">
+        <CardHeader className="pb-6">
+          <CardTitle>Trade Pair Stats</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-1">
+          <div className="space-y-4">
+            <div>
+              <Asset
+                asset={{ key: 'iota', value: 'IOTA' }}
+                path={mapMarketToAssetPath(Market.IOTAUSD)}
+              />
+              <div>
+                <div className="flex justify-between">
+                  <p>Borrow Rate:</p>
+                  <p>
+                    <Rate value={iotaBorrowRate} />
+                  </p>
+                </div>
+                <div className="flex justify-between">
+                  <p>Funding Rate:</p>
+                  <p>
+                    <Rate value={iotaFundingRate} />
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div>
+              <Asset
+                asset={{ key: 'btc', value: 'BTC' }}
+                path={mapMarketToAssetPath(Market.BTCUSD)}
+              />
+              <div>
+                <div className="flex justify-between">
+                  <p>Borrow Rate:</p>
+                  <p>
+                    <Rate value={btcBorrowRate} />
+                  </p>
+                </div>
+                <div className="flex justify-between">
+                  <p>Funding Rate:</p>
+                  <p>
+                    <Rate value={btcFundingRate} />
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div>
+              <Asset
+                asset={{ key: 'eth', value: 'ETH' }}
+                path={mapMarketToAssetPath(Market.ETHUSD)}
+              />
+              <div>
+                <div className="flex justify-between">
+                  <p>Borrow Rate:</p>
+                  <p>
+                    <Rate value={ethBorrowRate} />
+                  </p>
+                </div>
+                <div className="flex justify-between">
+                  <p>Funding Rate:</p>
+                  <p>
+                    <Rate value={ethFundingRate} />
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </CardContent>
       </Card>
     </div>
   );
