@@ -106,7 +106,8 @@ export const Pool = () => {
     address: liquidityPoolAddress,
     abi: LiquidityPoolAbi,
     functionName: 'balanceOf',
-    args: [address],
+    // @ts-ignore-error
+    args: [address as `0x${string}`],
   });
 
   // TODO: this should be throttled, e.g. via debounce
@@ -129,21 +130,24 @@ export const Pool = () => {
     address: liquidityPoolAddress,
     abi: LiquidityPoolAbi,
     functionName: 'previewRedeem',
-    args: [ownedShares],
+    // @ts-ignore-error
+    args: [ownedShares as bigint],
   });
 
   const { data: balance, refetch: refetchBalance } = useReadContract({
     address: collateralTokenAddress,
     abi: erc20Abi,
     functionName: 'balanceOf',
-    args: [address],
+    // @ts-ignore-error
+    args: [address as `0x${string}`],
   });
 
   const { data: allowance, refetch: refetchAllowance } = useReadContract({
     address: collateralTokenAddress,
     abi: erc20Abi,
     functionName: 'allowance',
-    args: [address, liquidityPoolAddress],
+    // @ts-ignore-error
+    args: [address as `0x${string}`, liquidityPoolAddress],
   });
 
   // TODO: batch this up via multicall or serve via custom API

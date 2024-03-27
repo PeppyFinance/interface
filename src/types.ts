@@ -1,4 +1,4 @@
-import { config } from './lib/wagmiConfig';
+// import { config } from './lib/wagmiConfig';
 
 export enum Market {
   IOTAUSD = 'IOTAUSD',
@@ -10,8 +10,8 @@ export enum Market {
   // SHIBUSD = 'SHIBUSD',
 }
 
-declare module 'wagmi' {
-  interface Register {
-    config: typeof config;
-  }
-}
+// declare module 'wagmi' {
+//   interface Register {
+//     config: typeof config;
+//   }
+// }

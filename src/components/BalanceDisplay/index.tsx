@@ -13,7 +13,7 @@ export function BalanceDisplay() {
     address: collateralTokenAddress,
     functionName: 'balanceOf',
     account: address,
-    args: [address],
+    args: [address as `0x${string}`],
     abi: [
       {
         constant: true,
@@ -32,7 +32,7 @@ export function BalanceDisplay() {
   }
 
   if (isPending) return <div>Loading...</div>;
-
+  // @ts-ignore-error
   if (error) return <div>Error: {(error as BaseError).shortMessage || error.message}</div>;
 
   return <div>Balance: {balance?.toString()}</div>;

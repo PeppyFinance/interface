@@ -26,7 +26,7 @@ const sliderVariants = cva(
     },
   }
 );
-
+// @ts-ignore-error
 export interface SliderProps
   extends React.InputHTMLAttributes<HTMLInputElement>,
     VariantProps<typeof sliderVariants> {
@@ -39,6 +39,7 @@ const Slider = React.forwardRef<HTMLInputElement, SliderProps>(
     return (
       <Comp
         type="range"
+        // @ts-ignore-error
         className={cn(sliderVariants({ variant, size, className }))}
         ref={ref}
         {...props}

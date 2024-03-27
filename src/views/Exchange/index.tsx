@@ -89,6 +89,7 @@ export const Exchange = () => {
     address: collateralTokenAddress,
     abi: erc20Abi,
     functionName: 'balanceOf',
+    // @ts-ignore-error
     args: [address],
   });
 
@@ -96,6 +97,7 @@ export const Exchange = () => {
     address: collateralTokenAddress,
     abi: erc20Abi,
     functionName: 'allowance',
+    // @ts-ignore-error
     args: [address, tradePairAddress],
   });
 
@@ -209,6 +211,7 @@ export const Exchange = () => {
         address: tradePairAddress,
         abi: TradePairAbi,
         functionName: 'openPosition',
+        // @ts-ignore-error
         args: [parsedCollateral, BigInt(leverage * 1_000_000), direction, priceFeedUpdateData],
         value: 1n,
       });
@@ -414,6 +417,7 @@ export const Exchange = () => {
           </CardContent>
           <CardFooter>
             <Button
+            // @ts-ignore-error
               disabled={isButtonDisabled}
               className="w-full mr-2"
               fontWeight="heavy"

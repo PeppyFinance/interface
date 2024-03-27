@@ -14,13 +14,44 @@ body {
   line-height: normal;
 
   /* TODO: DESKTOP: remove max-width */
-  max-width: 460px;
+  max-width: 460px !important;
 }
 
 #root {
   margin: 0;
   height: 100%;
-
   /* TODO: DESKTOP: remove max-width */
   max-width: 460px;
+}
+
+#topbar {
+  max-width: 460px;
+}
+#content {
+  margin: 0px;
+  margin-top: 70px;
+  padding-top: 0px;
+  position: absolute;
+  top: 0;
+  max-width: 460px;
+}
+#cardFooter {
+  display:grid;
+}
+
+@media screen and (min-width: 800px) {
+  #content {
+    margin: 0px;
+    padding-top:70px;
+    position: absolute;
+    top: 50%;
+    -ms-transform: translateY(-50%);
+    transform: translateY(-50%);
+  }
+}
+
+@media screen and (max-width: 800px)   {
+  #exchangeChart {
+    display:none;
+  }
 }

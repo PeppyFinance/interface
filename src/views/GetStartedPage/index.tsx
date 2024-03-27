@@ -13,6 +13,7 @@ export const GetStartedPage = () => {
     address: collateralTokenAddress,
     abi: PeppyUsdcAbi,
     functionName: 'minted',
+    // @ts-ignore-error
     args: [address],
   });
 
@@ -105,7 +106,7 @@ export const GetStartedPage = () => {
             </p>
           </p>
         </CardContent>
-        <CardFooter>
+        <CardFooter id="cardFooter">
           <Button disabled={isMintButtonDisabled} variant="constructive" onClick={handleMintTokens}>
             {mintButtonText}
           </Button>

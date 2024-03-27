@@ -1,93 +1,16 @@
-import { useState } from 'react';
-import './App.css';
-import { Link, Outlet, useLocation } from 'react-router-dom';
-import { HamburgerMenuIcon } from '@radix-ui/react-icons';
-import { SheetContent, SheetHeader, SheetTitle, Sheet } from './components/ui/sheet';
+import { Outlet } from 'react-router-dom';
 import { Toaster } from './components/ui/sonner';
-import classNames from 'classnames';
-
-const Header = () => {
-  const [menuOpen, setMenuOpen] = useState<boolean>(false);
-  const location = useLocation();
-
-  return (
-    <div className="w-full bg-glass/30 shadow-default backdrop-blur-md flex justify-between px-3 py-2 max-[500px]:h-12 min-[500px]:h-[56px]">
-      <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
-        <HamburgerMenuIcon className="w-7 h-full" onClick={() => setMenuOpen(true)} />
-        <SheetContent className="max-w-[360px]" side="left">
-          <SheetHeader>
-            <SheetTitle>Menu</SheetTitle>
-          </SheetHeader>
-          <div className="flex flex-col space-y-1 mt-8">
-            <Link
-              className={classNames('rounded-md p-3', {
-                'bg-glass/20': location.pathname === '/',
-              })}
-              to="/"
-              onClick={() => setMenuOpen(false)}
-            >
-              Homepage
-            </Link>
-            <Link
-              className={classNames('rounded-md p-3', {
-                'bg-glass/20': location.pathname === '/get-started',
-              })}
-              to="/get-started"
-              onClick={() => setMenuOpen(false)}
-            >
-              Get Started <span className="pl-1">🚀</span>
-            </Link>
-            <Link
-              className={classNames('rounded-md p-3', {
-                'bg-glass/20': location.pathname === '/exchange',
-              })}
-              to="/exchange"
-              onClick={() => setMenuOpen(false)}
-            >
-              Exchange
-            </Link>
-            <Link
-              className={classNames('rounded-md p-3', {
-                'bg-glass/20': location.pathname === '/open-positions',
-              })}
-              to="/open-positions"
-              onClick={() => setMenuOpen(false)}
-            >
-              Open Positions
-            </Link>
-            <Link
-              className={classNames('rounded-md p-3', {
-                'bg-glass/20': location.pathname === '/closed-positions',
-              })}
-              to="/closed-positions"
-              onClick={() => setMenuOpen(false)}
-            >
-              Closed Positions
-            </Link>
-            <Link
-              className={classNames('rounded-md p-3', {
-                'bg-glass/20': location.pathname === '/pool',
-              })}
-              to="/pool"
-              onClick={() => setMenuOpen(false)}
-            >
-              Pool
-            </Link>
-          </div>
-        </SheetContent>
-      </Sheet>
-      <w3m-button />
-    </div>
-  );
-};
+import { Topbar } from './components/Navbar/topbar';
 
 export const Layout = () => {
   return (
     <div className="tracking-widest h-screen flex flex-col bg-[url('/background.png')] bg-center bg-cover overflow-hidden">
-      <Header />
-      <div className="flex-auto overflow-auto w-full">
+      <Topbar />
+      <div className="flex-auto overflow-auto w-full" id="content">
         <Outlet />
       </div>
+      <footer>
+      </footer>
       <Toaster position="top-center" />
     </div>
   );
