@@ -30,6 +30,15 @@ const Header = () => {
             </Link>
             <Link
               className={classNames('rounded-md p-3', {
+                'bg-glass/20': location.pathname === '/get-started',
+              })}
+              to="/get-started"
+              onClick={() => setMenuOpen(false)}
+            >
+              Get Started <span className="pl-1">🚀</span>
+            </Link>
+            <Link
+              className={classNames('rounded-md p-3', {
                 'bg-glass/20': location.pathname === '/exchange',
               })}
               to="/exchange"

@@ -147,7 +147,13 @@ export const Exchange = () => {
               : exceedsAvailableLiquidity
                 ? 'Not enough liqudity'
                 : 'Open Position',
-    [hasSufficientSize, hasEnoughBalance, hasEnoughAllowance, statusAccount]
+    [
+      hasSufficientSize,
+      hasEnoughBalance,
+      hasEnoughAllowance,
+      statusAccount,
+      exceedsAvailableLiquidity,
+    ]
   );
 
   const showSpinner = useMemo(
@@ -160,8 +166,13 @@ export const Exchange = () => {
   );
 
   const isButtonDisabled = useMemo(
-    () => !hasEnoughBalance || !hasSufficientSize || statusAccount !== 'connected' || showSpinner,
-    [hasEnoughBalance, hasSufficientSize, statusAccount, showSpinner]
+    () =>
+      !hasEnoughBalance ||
+      !hasSufficientSize ||
+      statusAccount !== 'connected' ||
+      showSpinner ||
+      exceedsAvailableLiquidity,
+    [hasEnoughBalance, hasSufficientSize, statusAccount, showSpinner, exceedsAvailableLiquidity]
   );
 
   const isInputDisabled = useMemo(() => showSpinner, [showSpinner]);
