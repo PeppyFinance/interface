@@ -15,3 +15,10 @@ export enum Market {
 //     config: typeof config;
 //   }
 // }
+
+export interface PositionValues {
+  entryPrice : number
+  isLong: boolean
+  collateral: number
+  size: number
+}

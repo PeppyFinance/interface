@@ -11,7 +11,7 @@ import { useAccount, useReadContract, useWriteContract, useWaitForTransactionRec
 import { erc20Abi, parseEther, formatEther } from 'viem';
 import TradePairAbi from '@/abi/TradePair.abi';
 import { connection, subscribeToPriceFeeds, unsubscribeToPriceFeeds } from '@/lib/pyth';
-import { formatPrice, mapMarketToTradePairAddress } from '@/lib/utils';
+import { formatPrice, liquidationPriceCalculation, mapMarketToTradePairAddress } from '@/lib/utils';
 import { useMarketStore } from '@/store';
 import { DollarMask } from '@/lib/masks';
 import { Spinner } from '@/components/ui/spinner';
@@ -186,9 +186,14 @@ export const Exchange = () => {
       return 0;
     }
 
-    const entryPrice = currentMarketState.currentPrice;
-    return entryPrice * (1 + ((isLong ? -1 : 1) * Number(parsedCollateral)) / Number(positionSize));
-  }, [currentMarketState, parsedCollateral, leverage]);
+    return liquidationPriceCalculation({
+      entryPrice: currentMarketState.currentPrice,
+      isLong,
+      collateral: Number(parsedCollateral),
+      size: Number(positionSize),
+    });
+
+  }, [currentMarketState, parsedCollateral, leverage, isLong]);
 
   const handleOpenPosition = async () => {
     if (!currentMarketState) {

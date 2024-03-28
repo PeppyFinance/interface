@@ -1,4 +1,4 @@
-import { Market } from '@/types';
+import { PositionValues, Market } from '@/types';
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { Address, formatEther } from 'viem';
@@ -91,4 +91,11 @@ export function mapMarketToPriceFeedId(market: Market): string {
   };
 
   return _map[market];
+}
+
+export function liquidationPriceCalculation(position: PositionValues): number {
+  const result: number = position.entryPrice * (1 + (position.isLong ? -1 : 1) * position.collateral / position.size);
+
+  if(!Number.isNaN(result) && result > 0) return result
+  return 0
 }
