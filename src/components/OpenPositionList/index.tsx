@@ -20,10 +20,12 @@ import { Market } from '@/types';
 import { Asset } from '../Asset';
 import { PRICE_PRECISION } from '@/lib/constants';
 import { useMarketStore } from '@/store';
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Spinner } from '../ui/spinner';
 import { toast } from 'sonner';
 import { Pnl } from '../Pnl';
+import { Drawer, DrawerContent, DrawerHeader } from '@/components/ui/drawer.tsx';
+import { TradingViewChart } from '@/components/TradingView';
 
 const openPositionsSubscription = graphql(/* GraphQL */ `
   subscription getPositions($owner: String!) {
@@ -50,6 +52,7 @@ interface PositionProps {
   isLong: boolean;
   market: Market;
   pairName: string;
+  onOpenChart: (open: boolean) => void
 }
 
 const Position = ({
@@ -60,8 +63,9 @@ const Position = ({
   isLong,
   market,
   pairName,
+  onOpenChart,
 }: PositionProps) => {
-  const { marketsState } = useMarketStore();
+  const { marketsState, setCurrentMarket } = useMarketStore();
 
   const {
     writeContract: writeContractClosePosition,
@@ -92,6 +96,11 @@ const Position = ({
       value: 1n,
     });
   };
+
+  const handleOpenChart = () => {
+    setCurrentMarket(market)
+    onOpenChart(true)
+  }
 
   const showSpinner = useMemo(
     () => statusClosePosition === 'pending' || isConfirmingClosePosition,
@@ -147,13 +156,17 @@ const Position = ({
       </CardHeader>
       <CardContent>
         <div className="space-y-1 pt-6">
-          <div className="mb-4">
+          <div className="mb-4 flex w-full justify-between">
             <Asset
               iconSize="lg"
               textSize="lg"
               asset={{ key: pairName, value: pairName }}
               path={mapMarketToAssetPath(market)}
             />
+            <div className="flex flex-col items-center justify-center cursor-pointer" onClick={handleOpenChart}>
+              <p className="text-lg">{currentPrice ? formatPrice(currentPrice) : '$ ...'}</p>
+              <p className="text-xxs underline">observe in graph</p>
+            </div>
           </div>
           <div className="flex justify-between">
             <p>Collateral:</p>
@@ -170,10 +183,6 @@ const Position = ({
           <div className="flex justify-between">
             <p>Entry Price:</p>
             <p>${formatDynamicPrecisionPrice(Number(entryPrice) / PRICE_PRECISION)}</p>
-          </div>
-          <div className="flex justify-between">
-            <p>Current Price:</p>
-            <p>{currentPrice ? formatPrice(currentPrice) : '$...'}</p>
           </div>
         </div>
         <div className="flex justify-between mt-6">
@@ -195,6 +204,7 @@ const Position = ({
 
 export function OpenPositionList() {
   const { address, status } = useAccount();
+  const [isTradingChartOpen, setIsTradingChartOpen] = useState<boolean>(false);
 
   const [result] = useSubscription({
     query: openPositionsSubscription,
@@ -218,21 +228,32 @@ export function OpenPositionList() {
     <div className="p-6">
       <div className="flex flex-col space-y-4">
         {data && data.Position.length !== 0 ? (
-          data.Position.map(position => (
-            <Position
-              key={position.id}
-              id={position.id}
-              size={position.entryVolume}
-              collateral={position.collateral}
-              entryPrice={position.entryPrice}
-              isLong={position.direction === '1'}
-              market={mapTradePairAddressToMarket(position.tradePair_id as Address)}
-              pairName={position.tradePair?.name || ''}
-            />
-          )).reverse()
-        ) : (
-          <div className="px-4 py-8">No open positions.</div>
-        )}
+            <>
+              {data.Position.map(position => (
+                <Position
+                  key={position.id}
+                  id={position.id}
+                  size={position.entryVolume}
+                  collateral={position.collateral}
+                  entryPrice={position.entryPrice}
+                  isLong={position.direction === '1'}
+                  market={mapTradePairAddressToMarket(position.tradePair_id as Address)}
+                  pairName={position.tradePair?.name || ''}
+                  onOpenChart={setIsTradingChartOpen}
+                />
+              )).reverse()
+              }
+              <Drawer open={isTradingChartOpen} onOpenChange={setIsTradingChartOpen}>
+                <DrawerContent className="h-[80%]">
+                  <DrawerHeader className="p-2" />
+                  <TradingViewChart />
+                </DrawerContent>
+              </Drawer>
+            </>
+          )
+          : (
+            <div className="px-4 py-8">No open positions.</div>
+          )}
       </div>
     </div>
   );
