@@ -11,6 +11,7 @@ import {
   formatDynamicPrecisionPrice,
   formatPrice,
   formatUSD,
+  liquidationPriceCalculation,
   mapMarketToAssetPath,
   mapMarketToPriceFeedId,
   mapMarketToTradePairAddress,
@@ -106,6 +107,15 @@ const Position = ({
     BigInt(Math.round(Number(size) * (currentPrice / (Number(entryPrice) / PRICE_PRECISION) - 1)))
     : 0n;
 
+  const liquidationPrice = useMemo(() => {
+    return liquidationPriceCalculation({
+      entryPrice: Number(entryPrice) / PRICE_PRECISION,
+      isLong: isLong,
+      collateral: Number(collateral) / PRICE_PRECISION,
+      size: Number(size) / PRICE_PRECISION,
+    });
+  }, [entryPrice, isLong, collateral, size]);
+
   // TODO: this rerenders all the items all the time,
   // perhaps we should find out how to only locally update
   useEffect(() => {
@@ -170,6 +180,10 @@ const Position = ({
           <div className="flex justify-between">
             <p>Entry Price:</p>
             <p>${formatDynamicPrecisionPrice(Number(entryPrice) / PRICE_PRECISION)}</p>
+          </div>
+          <div className="flex justify-between">
+            <p>Liquidation Price:</p>
+            <p>{liquidationPrice ? formatPrice(liquidationPrice) : '$...'}</p>
           </div>
           <div className="flex justify-between">
             <p>Current Price:</p>
