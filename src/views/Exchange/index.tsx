@@ -127,11 +127,6 @@ export const Exchange = () => {
     [allowance, parsedCollateral]
   );
 
-  const exceedsAvailableLiquidity = useMemo(
-    () => totalLiquidity && positionSize > totalLiquidity,
-    [positionSize, totalLiquidity]
-  );
-
   const hasSufficientSize = useMemo(() => positionSize > 0n, [positionSize]);
 
   const buttonText = useMemo(
@@ -144,16 +139,8 @@ export const Exchange = () => {
             ? 'Not enough funds'
             : !hasEnoughAllowance
               ? 'Approve'
-              : exceedsAvailableLiquidity
-                ? 'Not enough liqudity'
-                : 'Open Position',
-    [
-      hasSufficientSize,
-      hasEnoughBalance,
-      hasEnoughAllowance,
-      statusAccount,
-      exceedsAvailableLiquidity,
-    ]
+              : 'Open Position',
+    [hasSufficientSize, hasEnoughBalance, hasEnoughAllowance, statusAccount]
   );
 
   const showSpinner = useMemo(
@@ -166,13 +153,8 @@ export const Exchange = () => {
   );
 
   const isButtonDisabled = useMemo(
-    () =>
-      !hasEnoughBalance ||
-      !hasSufficientSize ||
-      statusAccount !== 'connected' ||
-      showSpinner ||
-      exceedsAvailableLiquidity,
-    [hasEnoughBalance, hasSufficientSize, statusAccount, showSpinner, exceedsAvailableLiquidity]
+    () => !hasEnoughBalance || !hasSufficientSize || statusAccount !== 'connected' || showSpinner,
+    [hasEnoughBalance, hasSufficientSize, statusAccount, showSpinner]
   );
 
   const isInputDisabled = useMemo(() => showSpinner, [showSpinner]);
