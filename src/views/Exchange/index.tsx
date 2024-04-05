@@ -209,7 +209,12 @@ export const Exchange = () => {
         address: tradePairAddress,
         abi: TradePairAbi,
         functionName: 'openPosition',
-        args: [parsedCollateral, BigInt(leverage * 1_000_000), direction, priceFeedUpdateData],
+        args: [
+          parsedCollateral,
+          BigInt(Math.round(leverage * 1_000_000)),
+          direction,
+          priceFeedUpdateData,
+        ],
         value: 1n,
         // TODO: fix manual gas limit
         gas: 380_000n,
@@ -432,3 +437,4 @@ export const Exchange = () => {
     </div>
   );
 };
+

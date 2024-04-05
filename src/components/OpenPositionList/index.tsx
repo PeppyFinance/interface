@@ -105,7 +105,7 @@ const Position = ({
   const currentPrice = marketsState[market]?.currentPrice;
   const pnl = currentPrice
     ? (isLong ? 1n : -1n) *
-    BigInt(Math.round(Number(size) * (currentPrice / (Number(entryPrice) / PRICE_PRECISION) - 1)))
+      BigInt(Math.round(Number(size) * (currentPrice / (Number(entryPrice) / PRICE_PRECISION) - 1)))
     : 0n;
 
   // TODO: this rerenders all the items all the time,
@@ -239,3 +239,4 @@ export function OpenPositionList() {
     </div>
   );
 }
+
