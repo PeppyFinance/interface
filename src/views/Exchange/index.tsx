@@ -211,6 +211,8 @@ export const Exchange = () => {
         functionName: 'openPosition',
         args: [parsedCollateral, BigInt(leverage * 1_000_000), direction, priceFeedUpdateData],
         value: 1n,
+        // TODO: fix manual gas limit
+        gas: 380_000n,
       });
     }
   };

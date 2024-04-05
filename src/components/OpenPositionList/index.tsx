@@ -90,6 +90,8 @@ const Position = ({
       functionName: 'closePosition',
       args: [id, priceFeedUpdateData],
       value: 1n,
+      // TODO: fix manual gas limit
+      gas: 280_000n,
     });
   };
 
