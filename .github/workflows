@@ -1,0 +1,42 @@
+name: Deploy Website
+
+on:
+  workflow_dispatch: # Allows manual trigger from GitHub UI
+  push:
+    tags:
+      - 'release-*'
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0 # Fetches all history for .git if needed
+
+    - name: Setup Node.js environment
+      uses: actions/setup-node@v2
+      with:
+        node-version: '14' # Specify the Node.js version you need
+
+    - name: Install pnpm
+      run: npm install -g pnpm
+
+    - name: Install dependencies with pnpm
+      run: pnpm install
+
+    - name: Build project
+      run: npm run build
+
+    - name: Copy build directory to server
+      env:
+        SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        SERVER_USER: ${{ secrets.SSH_USER }}
+        SERVER_IP: ${{ secrets.SSH_SERVER }}
+        DEST_PATH: ${{ secrets.SSH_PATH }}
+      run: |
+        mkdir -p ~/.ssh
+        echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+        ssh-keyscan $SERVER_IP >> ~/.ssh/known_hosts
+        rsync -avz --delete ./dist/ $SERVER_USER@$SERVER_IP:$DEST_PATH
