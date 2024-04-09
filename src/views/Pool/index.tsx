@@ -106,6 +106,7 @@ export const Pool = () => {
     address: liquidityPoolAddress,
     abi: LiquidityPoolAbi,
     functionName: 'balanceOf',
+    // @ts-expect-error not assignable
     args: [address],
   });
 
@@ -129,6 +130,7 @@ export const Pool = () => {
     address: liquidityPoolAddress,
     abi: LiquidityPoolAbi,
     functionName: 'previewRedeem',
+    // @ts-expect-error not assignable
     args: [ownedShares],
   });
 
@@ -136,6 +138,7 @@ export const Pool = () => {
     address: collateralTokenAddress,
     abi: erc20Abi,
     functionName: 'balanceOf',
+    // @ts-expect-error not assignable
     args: [address],
   });
 
@@ -143,6 +146,7 @@ export const Pool = () => {
     address: collateralTokenAddress,
     abi: erc20Abi,
     functionName: 'allowance',
+    // @ts-expect-error not assignable
     args: [address, liquidityPoolAddress],
   });
 

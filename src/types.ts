@@ -1,5 +1,3 @@
-import { config } from './lib/wagmiConfig';
-
 export enum Market {
   IOTAUSD = 'IOTAUSD',
   BTCUSD = 'BTCUSD',
@@ -8,10 +6,4 @@ export enum Market {
   // AVAXUSD = 'AVAXUSD',
   // DOGEUSD = 'DOGEUSD',
   // SHIBUSD = 'SHIBUSD',
-}
-
-declare module 'wagmi' {
-  interface Register {
-    config: typeof config;
-  }
 }

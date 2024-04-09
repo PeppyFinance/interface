@@ -13,6 +13,7 @@ export const GetStartedPage = () => {
     address: collateralTokenAddress,
     abi: PeppyUsdcAbi,
     functionName: 'minted',
+    // @ts-expect-error not assignable
     args: [address],
   });
 

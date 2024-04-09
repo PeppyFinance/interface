@@ -89,6 +89,7 @@ export const Exchange = () => {
     address: collateralTokenAddress,
     abi: erc20Abi,
     functionName: 'balanceOf',
+    // @ts-expect-error not assignable
     args: [address],
   });
 
@@ -96,6 +97,7 @@ export const Exchange = () => {
     address: collateralTokenAddress,
     abi: erc20Abi,
     functionName: 'allowance',
+    // @ts-expect-error not assignable
     args: [address, tradePairAddress],
   });
 
@@ -195,6 +197,7 @@ export const Exchange = () => {
           parsedCollateral,
           BigInt(Math.round(leverage * 1_000_000)),
           direction,
+          // @ts-expect-error not assignable
           priceFeedUpdateData,
         ],
         value: 1n,

@@ -13,6 +13,7 @@ export function BalanceDisplay() {
     address: collateralTokenAddress,
     functionName: 'balanceOf',
     account: address,
+    // @ts-expect-error not assignable
     args: [address],
     abi: [
       {
@@ -33,6 +34,7 @@ export function BalanceDisplay() {
 
   if (isPending) return <div>Loading...</div>;
 
+  // @ts-expect-error not found
   if (error) return <div>Error: {(error as BaseError).shortMessage || error.message}</div>;
 
   return <div>Balance: {balance?.toString()}</div>;

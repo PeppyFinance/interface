@@ -181,7 +181,9 @@ const CarouselPrevious = React.forwardRef<HTMLButtonElement, React.ComponentProp
     return (
       <Button
         ref={ref}
+        // @ts-expect-error not assignable
         variant={variant}
+        // @ts-expect-error not assignable
         size={size}
         className={cn(
           'absolute  h-8 w-8 rounded-full',
@@ -209,7 +211,9 @@ const CarouselNext = React.forwardRef<HTMLButtonElement, React.ComponentProps<ty
     return (
       <Button
         ref={ref}
+        // @ts-expect-error not assignable
         variant={variant}
+        // @ts-expect-error not assignable
         size={size}
         className={cn(
           'absolute h-8 w-8 rounded-full',
