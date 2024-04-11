@@ -12,17 +12,11 @@ body {
   font-style: normal;
   font-weight: 400;
   line-height: normal;
-
-  /* TODO: DESKTOP: remove max-width */
-  max-width: 460px;
 }
 
 #root {
   margin: 0;
   height: 100%;
-
-  /* TODO: DESKTOP: remove max-width */
-  max-width: 460px;
 }
 
 #content {
@@ -38,7 +32,21 @@ footer {
   height: 50px;
 }
 
+@media (min-width: 1400px) {
+  .container {
+      max-width: 1920px;
+  }
+}
+
 @media screen and (min-width: 800px) {
+  #content {
+    margin: 0px;
+    padding-top:120px;
+    position: absolute;
+  }
+}
+
+@media screen and (max-width: 800px)   {
   #content {
     margin: 0px;
     padding-top:70px;
@@ -47,10 +55,12 @@ footer {
     -ms-transform: translateY(-50%);
     transform: translateY(-50%);
   }
-}
 
-@media screen and (max-width: 800px)   {
   #exchangeChart {
     display:none;
+  }
+
+  footer {
+    display:none
   }
 }
