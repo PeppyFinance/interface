@@ -66,7 +66,8 @@ export default {
       },
       boxShadow: {
         default:
-          '0px 0px 3px 0px rgba(254, 251, 224, 0.20) inset, 0px 4px 4px 0px rgba(0, 0, 0, 0.25)',
+          '0px 0px 3px 0px rgba(254, 251, 224, 0.20) inset, 0px 4px 4px 0px rgba(255, 255, 255, 0.5)',
+        'md': '0 4px 14px 0 rgba(255, 255, 255, 0.39)',
       },
       textShadow: {
         DEFAULT: '0px 0px 4px #FFF, 0px 4px 4px rgba(0, 0, 0, 0.25)',

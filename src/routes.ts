@@ -5,6 +5,11 @@ export const routes = [
     element: "{<LandingPage />}"
   },
   {
+    title: "Getting Started",
+    href: "/get-started",
+    element: "{<GetStartedPage />}"
+  },
+  {
     title: "Exchange",
     href: "/exchange",
     element: "{<Exchange />}"
