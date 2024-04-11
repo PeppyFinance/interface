@@ -14,8 +14,8 @@ export const Topbar = () => {
             <NavMobile />
           </div>
         </div>
-        <div className="hidden lg:flex md:flex md:items-center lg:items-center gap-5 text-sm w-full justify-between">
-          <NavDesktop />
+        <div className="hidden lg:flex md:flex md:items-center lg:items-center gap-5 text-sm w-full justify-end">
+          <NavDesktop/>
         </div>
       </nav>
     </div>
