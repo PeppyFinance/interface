@@ -11,7 +11,7 @@ export const NavDesktop = () => {
           <li key={title}>
             <a
               href={href}
-              className="flex items-center gap-1 hover:text-neutral-400 transition-all"
+              className="flex items-center gap-1 hover:text-neutral-400 transition-all  whitespace-nowrap"
             >
               {title}
             </a>
