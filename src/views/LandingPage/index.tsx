@@ -16,7 +16,7 @@ export const LandingPage = () => {
                   <div className="rounded-full overflow-hidden drop-shadow-3xl my-4">
                     <img src="/peppy.png" alt="Peppy Logo" className="h-[240px]" />
                   </div>
-                  <Card className="bg-darkGlass/30 w-full shadow-md mt-6">
+                  <Card className="bg-darkGlass/30 w-full shadow-md mt-6 md:w-[480px]">
                     <CardContent className="p-4 flex flex-col items-center text-lg font-bold">
                       Trade yourself to the moon with up to 100x leverage 🐸
                     </CardContent>
