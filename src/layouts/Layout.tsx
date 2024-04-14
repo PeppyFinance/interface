@@ -1,4 +1,4 @@
-import { Navigate, Outlet } from 'react-router-dom';
+import { useNavigate, Outlet } from 'react-router-dom';
 import { useAccount } from 'wagmi';
 import { Footer } from '../components/Footer/footer';
 import { Topbar } from "../components/Navbar/topbar";
@@ -6,10 +6,10 @@ import { Toaster } from '../components/ui/sonner';
 
 export const Layout = () => {
   const { isConnected } = useAccount();
+  const navigate = useNavigate();
 
-  if (!isConnected) {
-    // Redirect user if they are not connected
-    return <Navigate to="/" />;
+  if (isConnected) {
+    navigate("/");
   }
 
   return (

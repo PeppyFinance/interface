@@ -1,5 +1,3 @@
-
-import React from 'react';
 import { createBrowserRouter, createRoutesFromElements, Route } from 'react-router-dom';
 import { ClosedPositionList } from './components/ClosedPositionList';
 import { OpenPositionList } from './components/OpenPositionList';

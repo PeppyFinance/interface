@@ -1,5 +1,3 @@
-import Layout from './layouts/Layout';
-import PlainLayout from './layouts/PlainLayout';
 import { ClosedPositionList } from './components/ClosedPositionList';
 import { OpenPositionList } from './components/OpenPositionList';
 import { Exchange } from './views/Exchange';
