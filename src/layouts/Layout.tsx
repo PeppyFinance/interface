@@ -1,9 +1,8 @@
-import { Toaster } from '../components/ui/sonner';
-import { Topbar } from "../components/Navbar/topbar";
-import { Outlet } from 'react-router-dom';
-import { Footer } from '../components/Footer/footer';
+import { Navigate, Outlet } from 'react-router-dom';
 import { useAccount } from 'wagmi';
-import { Navigate } from 'react-router-dom';
+import { Footer } from '../components/Footer/footer';
+import { Topbar } from "../components/Navbar/topbar";
+import { Toaster } from '../components/ui/sonner';
 
 export const Layout = () => {
   const { isConnected } = useAccount();
