@@ -37,6 +37,10 @@ export const TradingBox = () => {
   const { marketsState, currentMarket } = useMarketStore();
   const { address, status: statusAccount } = useAccount();
 
+  const sliderStyle = {
+    background: `linear-gradient(to-right, yellow {value}%, yellow {100}%)`
+  };
+
   const {
     writeContract: writeContractOpenPosition,
     data: hashOpenPosition,
@@ -136,7 +140,7 @@ export const TradingBox = () => {
 
     // Check if the value is a number and is not NaN before setting the state
     if (!isNaN(value) && Number.isInteger(value)) {
-      if(value > 100) { setLeverage(100);} else {setLeverage(value);}
+      if (value > 100) { setLeverage(100); } else { setLeverage(value); }
     }
   };
 
@@ -374,6 +378,7 @@ export const TradingBox = () => {
           min={1.1}
           max={100}
           onChange={e => setLeverage(Number(e.target.value))}
+          className='RangeSlider'
         />
       </div>
       <div className="pt-1">
