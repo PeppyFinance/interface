@@ -16,9 +16,6 @@ export const Layout = () => {
       <footer>
         <Footer/>
       </footer>
-      <footer>
-        <Footer/>
-      </footer>
       <Toaster position="top-center" />
     </div>
   );
