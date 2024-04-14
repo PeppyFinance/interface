@@ -9,9 +9,9 @@ const projectId = '0469e6137f22c487ae982990c50111c5';
 // 2. Create wagmiConfig
 const metadata = {
   name: 'Web3Modal',
-  description: 'Web3Modal Example',
-  url: 'https://web3modal.com', // origin must match your domain & subdomain
-  icons: ['https://avatars.githubusercontent.com/u/37784886'],
+  description: 'Peppy Finance',
+  url: 'https://app.peppy.finance', // origin must match your domain & subdomain
+  icons: ['https://app.peppy.finance/peppy.png'],
 };
 
 const chains = [shimmerTestnet] as const;
