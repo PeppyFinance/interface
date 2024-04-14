@@ -1,15 +1,18 @@
 import * as React from 'react';
 import { Slot } from '@radix-ui/react-slot';
 import { cva, type VariantProps } from 'class-variance-authority';
-
 import { cn } from '@/lib/utils';
 
+const StyleSheet = {
+  background: `linear-gradient(to right,blue 0%, blue 50% #ddd 50%, #ddd 100%) !important`
+};
+
 const sliderVariants = cva(
-  'appearance-none w-full h-2 rounded-full bg-gray-200 outline-none transition-opacity hover:opacity-75',
+  'appearance-none w-full h-2 rounded-full bg-yellow-200 outline-none transition-opacity hover:opacity-75',
   {
     variants: {
       variant: {
-        default: 'bg-gray-200',
+        default: 'bg-blue-200',
         destructive: 'bg-red-500',
         constructive: 'bg-green-500',
         primary: 'bg-blue-500',
@@ -43,6 +46,7 @@ const Slider = React.forwardRef<HTMLInputElement, SliderProps>(
         className={cn(sliderVariants({ variant, size, className }))}
         ref={ref}
         {...props}
+        style={StyleSheet}
       />
     );
   }
