@@ -52,11 +52,17 @@ export const LandingPage = () => {
   };
 
   const handlers = useSwipeable({
-        onSwipedLeft: () => setCurrentSlide((prev) => (prev + 1) % slides.length),
-        onSwipedRight: () => setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length),
-        preventDefaultTouchmoveEvent: true,
-        trackMouse: true
-    });
+    onSwipedLeft: () => setCurrentSlide((prev) => {
+      if (prev >= slides.length - 1) return prev;
+      return prev + 1;
+    }),
+    onSwipedRight: () => setCurrentSlide((prev) => {
+      if (prev <= 0) return prev;
+      return prev - 1;
+    }),
+    preventDefaultTouchmoveEvent: true,
+    trackMouse: true
+  });
 
   return (
     <div className="flex flex-col w-full h-full overflow-hidden">
