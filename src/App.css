@@ -6,7 +6,6 @@ html {
 
 body {
   height: 100%;
-
   font-family: 'Space Grotesk', sans-serif;
   font-size: 0.8125rem;
   font-style: normal;
@@ -29,8 +28,47 @@ body {
 
 footer {
   padding: 10px;
-  height: 50px;
+  height: 20px;
+  
+  img {
+    height: 15px;
+  }
+  a {
+    font-size: 8pt;
+  }
 }
+
+.controls button {
+  padding: 10px;
+  margin: 5px;
+  background-color: #ccc;
+  border: none;
+  cursor: pointer;
+}
+
+.controls button:hover {
+  background-color: #ddd;
+}
+
+.slide-indicators {
+  display: flex;
+  justify-content: center;
+  padding: 10px;
+}
+
+.indicator {
+  border: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  margin: 0 5px;
+  cursor: pointer;
+}
+
+.indicator.active {
+  background-color: blue;
+}
+
 
 @media (min-width: 1400px) {
   .container {
@@ -49,7 +87,7 @@ footer {
 @media screen and (max-width: 800px)   {
   #content {
     margin: 0px;
-    padding-top:70px;
+    padding-top: 120px;
     position: absolute;
     top: 50%;
     -ms-transform: translateY(-50%);
@@ -61,6 +99,6 @@ footer {
   }
 
   footer {
-    display:none
+    display: none
   }
 }

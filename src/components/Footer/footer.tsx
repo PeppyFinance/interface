@@ -27,12 +27,9 @@ const icons = [
   },
 ];
 
-
-
-
 export const Footer = () => {
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-glass/30 shadow-default drop-blur-md">
+    <div className="fixed bottom-0 left-0 right-0 bg-glass/30 shadow-default drop-blur-md h-[30px] sm:hidden">
       <div className="hidden lg:flex md:flex md:items-center lg:items-center gap-5 text-sm w-full justify-between">
       <div className="">
         <ul className="container flex items-center justify-between w-full gap-5">
