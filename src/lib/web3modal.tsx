@@ -35,5 +35,6 @@ createWeb3Modal({
   enableAnalytics: true, // Optional - defaults to your Cloud configuration
   themeVariables: {
     '--w3m-accent': 'hsl(var(--primary))',
+    '--w3m-border-radius-master': '1px'
   },
 });
